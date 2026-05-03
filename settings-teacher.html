@@ -274,19 +274,47 @@ if(window.location.hostname === "127.0.0.1"){
 
       <div class="card">
         <div class="card-head">
-          <span class="icon">list_alt</span>
-          Günlük Ders Programı
+          <span class="icon">grid_on</span>
+          Program Hazırla
           <span class="arrow">&#9662;</span>
         </div>
         <div class="accordion">
-          <div style="display:flex; gap:8px; margin-bottom:12px;">
-            <select class="ctrl" id="daySelect" style="flex:2"></select>
-            <button class="ctrl" id="addRowBtn" onclick="addRow()" style="flex:1; background:var(--color-accent); font-weight:bold;">+ SATIR EKLE</button>
-          </div>
-          <div id="scheduleHeader" style="opacity:.5; font-size:.6rem; font-weight:900; padding:0 5px;"></div>
-          <div id="rows"></div>
+          <div id="weeklyGridContainer"></div>
         </div>
       </div>
+    </div>
+  </div>
+</div>
+
+<div id="cellModalOverlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.78); z-index:9998; align-items:center; justify-content:center;">
+  <div style="background:var(--color-bg-card); border:1px solid var(--color-accent); border-radius:16px; padding:20px; width:88%; max-width:360px; max-height:82vh; overflow-y:auto;">
+    <div id="cellModalTitle" style="font-size:.85rem; font-weight:900; color:var(--color-accent); margin-bottom:14px;"></div>
+    <div style="margin-bottom:12px;">
+      <div style="font-size:var(--font-xs); color:var(--text-muted); margin-bottom:5px;">DERS</div>
+      <select id="cellLessonSelect" style="width:100%; padding:8px; border-radius:8px; background:var(--bg-input); border:1px solid var(--border-normal); color:var(--text-primary); font-size:.8rem;"></select>
+    </div>
+    <div id="cellAddLessonWrap" style="display:none; margin-bottom:12px;">
+      <div style="display:flex; gap:6px; margin-bottom:6px;">
+        <input id="cellNewClassInp" class="input" placeholder="Sınıf/Şube" style="width:90px; flex:none; font-size:.8rem;"/>
+        <input id="cellNewLessonInp" class="input" placeholder="Ders Adı" style="flex:1; font-size:.8rem;"/>
+      </div>
+      <div style="display:flex; gap:6px;">
+        <button onclick="confirmAddLessonFromCell()" style="flex:1; padding:6px 12px; background:var(--color-accent); border:none; border-radius:8px; color:#000; font-weight:700; font-size:.75rem; cursor:pointer;">Ekle</button>
+        <button onclick="cancelAddLessonFromCell()" style="padding:6px 10px; background:transparent; border:1px solid var(--border-strong); border-radius:8px; color:var(--text-muted); font-size:.75rem; cursor:pointer;">✕</button>
+      </div>
+    </div>
+    <div style="margin-bottom:14px;">
+      <div style="font-size:var(--font-xs); color:var(--text-muted); margin-bottom:6px;">YAZI RENGİ</div>
+      <div id="cellColorSwatches" style="display:flex; gap:6px; flex-wrap:wrap;"></div>
+    </div>
+    <div style="margin-bottom:16px;">
+      <div style="font-size:var(--font-xs); color:var(--text-muted); margin-bottom:6px;">YILLIK PLAN</div>
+      <button id="cellPlanBtn" onclick="openCellPlanModal()" style="width:100%; padding:9px; border-radius:8px; background:transparent; border:1px solid var(--border-strong); color:var(--text-secondary); font-size:.75rem; cursor:pointer; text-align:left;">Plan Seç</button>
+    </div>
+    <div style="display:flex; gap:8px;">
+      <button onclick="closeCellModal()" style="flex:1; padding:10px; border-radius:8px; background:transparent; border:1px solid var(--border-strong); color:var(--text-muted); font-size:.75rem; cursor:pointer;">İptal</button>
+      <button id="cellDeleteBtn" onclick="deleteCellEntry()" style="display:none; padding:10px 14px; border-radius:8px; background:transparent; border:1px solid #e74c3c; color:#e74c3c; font-size:.75rem; cursor:pointer;">Sil</button>
+      <button onclick="saveCellModal()" style="flex:1; padding:10px; border-radius:8px; background:var(--color-accent); border:none; color:#000; font-weight:900; font-size:.75rem; cursor:pointer;">Kaydet</button>
     </div>
   </div>
 </div>
@@ -384,6 +412,8 @@ if(!Array.isArray(appData.classes))                      appData.classes   = [];
 if(!Array.isArray(appData.activeDays))                   appData.activeDays= [0,1,2,3,4];
 if(!appData.schedule || typeof appData.schedule !== "object") appData.schedule = {};
 if(!appData.lastColor)                                   appData.lastColor = "#ff7a00";
+if(!appData.weeklyGrid || typeof appData.weeklyGrid !== "object") appData.weeklyGrid = {};
+if(!appData.weeklySlots || appData.weeklySlots < 1) appData.weeklySlots = 8;
 // Bu sayfa her zaman teacher rolünde çalışır — dışarıdan değiştirilemez
 appData.settings.role = "teacher";
 
@@ -739,15 +769,16 @@ function renderDays(){
   ).join("");
 
   const select = document.getElementById("daySelect");
-  const oldValue = select.value;
-  select.innerHTML = sourceIndexes.map((index) =>
-    '<option value="' + dayNames[index] + '">' + dayNames[index] + "</option>"
-  ).join("");
-
-  if(sourceIndexes.map((index) => dayNames[index]).includes(oldValue)){
-    select.value = oldValue;
-  }else{
-    select.value = isGuest() ? getTodayDayName() : (dayNames[sourceIndexes[0]] || "");
+  if(select){
+    const oldValue = select.value;
+    select.innerHTML = sourceIndexes.map((index) =>
+      '<option value="' + dayNames[index] + '">' + dayNames[index] + "</option>"
+    ).join("");
+    if(sourceIndexes.map((index) => dayNames[index]).includes(oldValue)){
+      select.value = oldValue;
+    }else{
+      select.value = isGuest() ? getTodayDayName() : (dayNames[sourceIndexes[0]] || "");
+    }
   }
 }
 
@@ -918,11 +949,242 @@ function selectPlan(path){
 }
 
 function savePlanSelection(){
+  if(cellPlanContext){
+    cellModalPlanPath = planSelectedPath;
+    cellPlanContext = false;
+    const btn = document.getElementById("cellPlanBtn");
+    if(btn) btn.textContent = planSelectedPath ? ("✓ "+planSelectedPath) : "Plan Seç";
+    closePlanModal();
+    return;
+  }
   if(planModalLessonIndex === null || !planSelectedPath) return;
   appData.lessons[planModalLessonIndex].planPath = planSelectedPath;
   saveAppData();
   renderSettingsUI();
   closePlanModal();
+}
+// ──────────────────────────────────────────────────────────
+
+// ── Program Hazırla (Haftalık Grid) ───────────────────────
+const DAY_SHORT_NAMES = { Pazartesi:"Pzt", Salı:"Sal", Çarşamba:"Çar", Perşembe:"Per", Cuma:"Cum", Cumartesi:"Cmt", Pazar:"Pzr" };
+const WEEKLY_SLOTS = 8;
+let cellModalDay = null;
+let cellModalSlot = null;
+let cellModalColor = "#ff7a00";
+let cellModalPlanPath = null;
+let cellPlanContext = false;
+
+function escHtml(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+
+function ensureWeeklyGrid(){ if(!appData.weeklyGrid||typeof appData.weeklyGrid!=="object") appData.weeklyGrid={}; }
+
+function getWeeklyCell(day, slot){ return ((appData.weeklyGrid||{})[day]||{})[slot]||null; }
+
+function renderWeeklyGrid(){
+  const container = document.getElementById("weeklyGridContainer");
+  if(!container) return;
+  ensureWeeklyGrid();
+  const activeDays = appData.activeDays.map(i => dayNames[i]).filter(Boolean);
+  if(!activeDays.length){
+    container.innerHTML = '<div style="color:var(--text-muted);font-size:.75rem;padding:8px;">Aktif gün seçilmedi.</div>';
+    return;
+  }
+  const slotCount = appData.weeklySlots || 8;
+  const slots = generateTimeSlots(slotCount);
+  const lunchNo = parseInt(appData.settings.lunchNo, 10) || 5;
+  let html = '<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;"><table style="border-collapse:collapse;width:100%;font-size:.65rem;">';
+  html += '<thead><tr><th style="padding:4px 2px;color:var(--text-muted);font-weight:700;text-align:center;min-width:26px;">#</th>';
+  activeDays.forEach(day => {
+    html += '<th style="padding:4px 3px;color:var(--color-accent);font-weight:900;text-align:center;min-width:52px;">'+(DAY_SHORT_NAMES[day]||day.slice(0,3))+'</th>';
+  });
+  html += '</tr></thead><tbody>';
+  for(let slot=1; slot<=slotCount; slot++){
+    const timeStr = slots[slot-1]||'';
+    const tp = timeStr.includes('-') ? timeStr.split('-') : [timeStr,''];
+    const timeHtml = tp[1] ? tp[0]+'<br>'+tp[1] : tp[0];
+    html += '<tr><td style="padding:3px 2px;text-align:center;font-size:.55rem;line-height:1.4;min-width:26px;"><span style="color:var(--color-accent);font-weight:900;">'+slot+'</span><br><span style="color:var(--text-muted);">'+timeHtml+'</span></td>';
+    activeDays.forEach(day => {
+      const cell = getWeeklyCell(day, slot);
+      if(cell && cell.lesson){
+        const parts = cell.lesson.split(' - ');
+        const hasClass = parts.length >= 2;
+        const cls = hasClass ? parts[0] : '';
+        const lsn = hasClass ? parts.slice(1).join(' - ') : parts[0];
+        const accent = cell.color || 'var(--color-accent)';
+        html += '<td onclick="openCellModal(\''+escHtml(day)+'\','+slot+')" style="padding:3px;cursor:pointer;">' +
+          '<div style="background:var(--color-bg-surface,#0b1220);border:1px solid rgba(255,255,255,.18);border-radius:7px;padding:4px 3px;min-height:38px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:1px;">' +
+          (hasClass ? '<span style="font-size:.5rem;color:rgba(255,255,255,.5);font-weight:500;line-height:1.2;letter-spacing:.01em;">'+escHtml(cls)+'</span>' : '') +
+          '<span style="font-size:.62rem;font-weight:900;color:'+accent+';line-height:1.2;letter-spacing:.03em;word-break:break-word;">'+escHtml(lsn.toUpperCase())+'</span>' +
+          '</div></td>';
+      }else{
+        html += '<td onclick="openCellModal(\''+escHtml(day)+'\','+slot+')" style="padding:3px;cursor:pointer;">' +
+          '<div style="background:var(--color-bg-surface,#0b1220);border:1px solid rgba(255,255,255,.15);border-radius:7px;min-height:38px;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.18);font-size:.8rem;">+</div></td>';
+      }
+    });
+    html += '</tr>';
+    if(slot === lunchNo){
+      html += '<tr><td colspan="'+(activeDays.length+1)+'" style="padding:4px 2px;">' +
+        '<div style="background:var(--color-accent);border-radius:6px;text-align:center;font-size:.58rem;font-weight:900;color:#000;padding:5px;letter-spacing:.06em;">ÖĞLE ARASI</div>' +
+        '</td></tr>';
+    }
+  }
+  html += '</tbody></table></div>';
+  html += '<div style="display:flex;gap:8px;margin-top:10px;">' +
+    '<button onclick="removeWeeklyRow()" style="flex:1;padding:9px;border-radius:8px;background:transparent;border:1px solid var(--border-strong);color:var(--text-muted);font-size:.75rem;font-weight:700;cursor:pointer;">− Satır Sil</button>' +
+    '<button onclick="addWeeklyRow()" style="flex:1;padding:9px;border-radius:8px;background:var(--color-accent);border:none;color:#000;font-size:.75rem;font-weight:900;cursor:pointer;">+ Satır Ekle</button>' +
+    '</div>';
+  container.innerHTML = html;
+}
+
+function openCellModal(day, slot){
+  cellModalDay = day;
+  cellModalSlot = slot;
+  const cell = getWeeklyCell(day, slot);
+  cellModalColor = cell ? (cell.color||appData.lastColor) : appData.lastColor;
+  cellModalPlanPath = cell ? (cell.planPath||null) : null;
+  document.getElementById("cellModalTitle").textContent = slot+". Ders · "+(DAY_SHORT_NAMES[day]||day);
+  buildCellLessonSelect(cell ? cell.lesson : "");
+  buildCellColorSwatches();
+  const planBtn = document.getElementById("cellPlanBtn");
+  if(planBtn) planBtn.textContent = cellModalPlanPath ? ("✓ "+cellModalPlanPath) : "Plan Seç";
+  document.getElementById("cellDeleteBtn").style.display = cell ? "inline-block" : "none";
+  document.getElementById("cellAddLessonWrap").style.display = "none";
+  document.getElementById("cellModalOverlay").style.display = "flex";
+}
+
+function buildCellLessonSelect(current){
+  const select = document.getElementById("cellLessonSelect");
+  const sorted = getSortedLessons();
+  let html = '<option value="">— Ders Seç —</option>';
+  sorted.forEach(({entry}) => {
+    html += '<option value="'+escHtml(entry.name)+'"'+(current===entry.name?' selected':'')+'>'+escHtml(entry.name)+'</option>';
+  });
+  html += '<option value="__add__">+ Ekle</option>';
+  select.innerHTML = html;
+  select.onchange = function(){
+    if(this.value==="__add__"){
+      this.value = current||"";
+      document.getElementById("cellAddLessonWrap").style.display = "block";
+      document.getElementById("cellNewLessonInp").focus();
+    }
+  };
+}
+
+function buildCellColorSwatches(){
+  const wrap = document.getElementById("cellColorSwatches");
+  wrap.innerHTML = "";
+  colors.forEach(color => {
+    const sw = document.createElement("div");
+    sw.style.cssText = "width:26px;height:26px;border-radius:50%;cursor:pointer;background:"+color+";border:2.5px solid "+(color===cellModalColor?"#fff":"transparent")+";flex-shrink:0;";
+    sw.onclick = e => { e.stopPropagation(); cellModalColor=color; buildCellColorSwatches(); };
+    wrap.appendChild(sw);
+  });
+  const multi = document.createElement("div");
+  multi.style.cssText = "width:26px;height:26px;border-radius:50%;cursor:pointer;background:conic-gradient(red,yellow,lime,cyan,blue,magenta,red);flex-shrink:0;";
+  multi.onclick = e => {
+    e.stopPropagation();
+    const p = document.createElement("input"); p.type="color"; p.value=cellModalColor; p.style.display="none";
+    document.body.appendChild(p);
+    p.oninput = () => { cellModalColor=p.value; buildCellColorSwatches(); };
+    p.onchange = () => document.body.removeChild(p);
+    p.click();
+  };
+  wrap.appendChild(multi);
+}
+
+function openCellPlanModal(){
+  cellPlanContext = true;
+  const lessonVal = document.getElementById("cellLessonSelect")?.value || "";
+  planModalLessonIndex = null;
+  planSelectedPath = cellModalPlanPath;
+  document.getElementById("planModalTitle").textContent = (lessonVal||"Ders") + " — Plan Seç";
+  const classSelect = document.getElementById("planClassSelect");
+  if(cellModalPlanPath){
+    classSelect.value = cellModalPlanPath.split("/")[0] || "";
+    if(classSelect.value) loadPlanList();
+  }else{
+    classSelect.value = "";
+    document.getElementById("planList").innerHTML = '<div style="color:var(--text-muted); font-size:var(--font-xs); padding:8px;">Önce sınıf seviyesi seçin</div>';
+  }
+  const infoEl = document.getElementById("planSelectedInfo");
+  if(cellModalPlanPath){ infoEl.textContent="Seçilen: "+cellModalPlanPath; infoEl.style.display="block"; }
+  else infoEl.style.display = "none";
+  document.getElementById("planSaveBtn").disabled = !cellModalPlanPath;
+  document.getElementById("planModalOverlay").style.display = "flex";
+}
+
+function closeCellModal(){
+  document.getElementById("cellModalOverlay").style.display = "none";
+  cellModalDay = null;
+  cellModalSlot = null;
+}
+
+function saveCellModal(){
+  if(!cellModalDay||!cellModalSlot) return;
+  const lesson = document.getElementById("cellLessonSelect").value;
+  if(!lesson||lesson==="__add__") return;
+  ensureWeeklyGrid();
+  if(!appData.weeklyGrid[cellModalDay]) appData.weeklyGrid[cellModalDay] = {};
+  const entry = { lesson, color: cellModalColor };
+  if(cellModalPlanPath) entry.planPath = cellModalPlanPath;
+  appData.weeklyGrid[cellModalDay][cellModalSlot] = entry;
+  saveAppData();
+  renderWeeklyGrid();
+  closeCellModal();
+}
+
+function deleteCellEntry(){
+  if(!cellModalDay||!cellModalSlot) return;
+  ensureWeeklyGrid();
+  if(appData.weeklyGrid[cellModalDay]) delete appData.weeklyGrid[cellModalDay][cellModalSlot];
+  saveAppData();
+  renderWeeklyGrid();
+  closeCellModal();
+}
+
+function confirmAddLessonFromCell(){
+  const inp = document.getElementById("cellNewLessonInp");
+  const clsInp = document.getElementById("cellNewClassInp");
+  const lessonName = (inp?.value||"").trim();
+  const cls = (clsInp?.value||"").trim();
+  if(!lessonName) return;
+  const name = cls ? cls + " - " + lessonName : lessonName;
+  appData.lessons.push({ name, color: appData.lastColor });
+  saveAppData();
+  renderSettingsUI();
+  document.getElementById("cellAddLessonWrap").style.display = "none";
+  if(inp) inp.value = "";
+  if(clsInp) clsInp.value = "";
+  buildCellLessonSelect(name);
+}
+
+function cancelAddLessonFromCell(){
+  document.getElementById("cellAddLessonWrap").style.display = "none";
+  const inp = document.getElementById("cellNewLessonInp");
+  const clsInp = document.getElementById("cellNewClassInp");
+  if(inp) inp.value = "";
+  if(clsInp) clsInp.value = "";
+}
+
+function addWeeklyRow(){
+  ensureWeeklyGrid();
+  appData.weeklySlots = (appData.weeklySlots || 8) + 1;
+  saveAppData();
+  renderWeeklyGrid();
+}
+
+function removeWeeklyRow(){
+  ensureWeeklyGrid();
+  const current = appData.weeklySlots || 8;
+  if(current <= 1) return;
+  const lastSlot = current;
+  appData.activeDays.forEach(i => {
+    const day = dayNames[i];
+    if(appData.weeklyGrid[day]) delete appData.weeklyGrid[day][lastSlot];
+  });
+  appData.weeklySlots = current - 1;
+  saveAppData();
+  renderWeeklyGrid();
 }
 // ──────────────────────────────────────────────────────────
 
@@ -997,8 +1259,7 @@ function renderSettingsUI(){
   }).join("");
 
   syncUserProfile();
-  renderSchedule();
-  updateGuestScheduleState();
+  renderWeeklyGrid();
 }
 
 function generateTimeSlots(rowCount){

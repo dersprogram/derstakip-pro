@@ -179,11 +179,14 @@ function renderGrid(){
   const active = appData?.activeDays?.length ? appData.activeDays : [0, 1, 2, 3, 4];
   const daysShown = active.map((index) => ALL_DAYS[index]).filter(Boolean);
 
-  let slotCount = 0;
-  daysShown.forEach((day) => {
-    const rows = AppShell.getScheduleRowsForDay(appData, day);
-    slotCount = Math.max(slotCount, rows.length);
-  });
+  let slotCount = appData?.weeklySlots || 0;
+  if(!slotCount){
+    const grid = appData?.weeklyGrid || {};
+    daysShown.forEach(day => {
+      const keys = Object.keys(grid[day] || {}).map(Number).filter(n => !isNaN(n) && n > 0);
+      if(keys.length) slotCount = Math.max(slotCount, Math.max(...keys));
+    });
+  }
   if(!slotCount) slotCount = 8;
 
   const settings = Object.assign({}, appData?.settings || {});
@@ -224,8 +227,7 @@ function renderGrid(){
 
     daysShown.forEach((dayName, dayIndex) => {
       const cell = createCell("cell lessonCell");
-      const dayRows = AppShell.getScheduleRowsForDay(appData, dayName);
-      const currentRow = dayRows.find((row) => row?.timeIdx === slotIndex) || dayRows[slotIndex] || null;
+      const currentRow = ((appData?.weeklyGrid || {})[dayName] || {})[slotIndex + 1] || null;
 
       if(dayIndex === daysShown.length - 1) cell.classList.add("lastCol");
       if(slotIndex === slotCount - 1 && !hasLunchBreak) cell.classList.add("lastRow");

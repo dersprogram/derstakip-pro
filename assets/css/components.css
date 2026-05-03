@@ -562,6 +562,9 @@ body.registerPrompt-open{
 .tblRow:last-child{
   border-bottom: none;
 }
+.tblRow.lunchAfterRow{
+  border-bottom: 3px solid var(--color-accent);
+}
 
 .tblNo{
   position: relative;

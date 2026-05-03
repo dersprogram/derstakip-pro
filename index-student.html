@@ -158,6 +158,17 @@
     return String(number).padStart(2, "0");
   }
 
+  function getWeeklyGridRows(data, dayName){
+    const totalSlots = data?.weeklySlots || 8;
+    const dayGrid = (data?.weeklyGrid || {})[dayName] || {};
+    const rows = [];
+    for(let slot = 1; slot <= totalSlots; slot++){
+      const cell = dayGrid[slot];
+      rows.push({ lesson: (cell && cell.lesson) ? cell.lesson : '', color: (cell && cell.color) ? cell.color : '', timeIdx: slot - 1, class: '' });
+    }
+    return rows;
+  }
+
   function generateTimeSlots(count){
     const slots = [];
     let current = appData.settings?.start || "08:15";
@@ -320,7 +331,8 @@
       return;
     }
 
-    const slots = generateTimeSlots(rows.length);
+    const totalSlots = appData?.weeklySlots || Math.max(8, rows.reduce((m, r) => Math.max(m, (r.timeIdx||0)+1), 0));
+    const slots = generateTimeSlots(totalSlots);
     const lessonState = lessonStateIndexOf(rows, slots, isToday);
 
     rows.forEach((rowData, index) => {
@@ -356,6 +368,8 @@
         '<div class="tblTime">' + time + "</div>"
       ].join("");
 
+      const lunchNo = parseInt(appData.settings?.lunchNo ?? 5, 10);
+      if(index + 1 === lunchNo) row.classList.add("lunchAfterRow");
       holder.appendChild(row);
     });
   }
@@ -381,7 +395,7 @@
     if(options.scroll) ensureVisible(activeChip);
 
     const dayName = activeChip.textContent.trim();
-    const rows = AppShell.getScheduleRowsForDay(appData, dayName);
+    const rows = getWeeklyGridRows(appData, dayName);
     renderTableRows(rows, dayName === todayName);
   }
 
