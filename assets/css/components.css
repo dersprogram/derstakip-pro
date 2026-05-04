@@ -563,7 +563,7 @@ body.registerPrompt-open{
   border-bottom: none;
 }
 .tblRow.lunchAfterRow{
-  border-bottom: 3px solid var(--color-accent);
+  border-bottom: 1px solid var(--color-accent);
 }
 
 .tblNo{

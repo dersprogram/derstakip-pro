@@ -325,7 +325,24 @@ async function loadPlanFromFirebase(){
     );
   }
 
-  const planPath = lessonObj?.planPath || null;
+  let planPath = lessonObj?.planPath || null;
+
+  if(!planPath){
+    const dayParam = params.get("day") || "";
+    if(dayParam){
+      const weeklyGrid = appData.weeklyGrid || {};
+      const dayGrid = weeklyGrid[dayParam] || {};
+      const totalSlots = appData.weeklySlots || 8;
+      const lessonTrimmed = lessonParam.trim();
+      for(let slot = 1; slot <= totalSlots; slot++){
+        const cell = dayGrid[slot];
+        if(cell && cell.lesson && cell.lesson.trim() === lessonTrimmed && cell.planPath){
+          planPath = cell.planPath;
+          break;
+        }
+      }
+    }
+  }
 
   if(!planPath){
     renderSwipe([]);
@@ -620,7 +637,7 @@ function renderAll(){
     const dayCard = document.createElement("div");
     dayCard.className = "card";
     dayCard.innerHTML = [
-      '<div class="card-head day-head">GÜN NOTLARI<span class="arrow">&#9662;</span></div>',
+      '<div class="card-head day-head">Gün Notları<span class="arrow">&#9662;</span></div>',
       '<div class="accordion day-acc"></div>'
     ].join("");
     box.appendChild(dayCard);

@@ -850,6 +850,11 @@ document.onclick = () => {
 let planModalLessonIndex = null;
 let planSelectedPath = null;
 
+function gradeFromLessonName(name){
+  const match = (name || "").match(/^(\d+)/);
+  return match ? match[1] : "";
+}
+
 function openPlanModal(lessonIndex, event){
   event.stopPropagation();
   planModalLessonIndex = lessonIndex;
@@ -865,7 +870,7 @@ function openPlanModal(lessonIndex, event){
     classSelect.value = parts[0] || "";
     planSelectedPath = existingPath;
   } else {
-    classSelect.value = "";
+    classSelect.value = gradeFromLessonName(lesson?.name || "");
   }
 
   document.getElementById("planList").innerHTML = '<div style="color:var(--text-muted); font-size:var(--font-xs); padding:8px;">Önce sınıf seviyesi seçin</div>';
@@ -1041,7 +1046,9 @@ function openCellModal(day, slot){
   cellModalSlot = slot;
   const cell = getWeeklyCell(day, slot);
   cellModalColor = cell ? (cell.color||appData.lastColor) : appData.lastColor;
-  cellModalPlanPath = cell ? (cell.planPath||null) : null;
+  cellModalPlanPath = cell
+    ? (cell.planPath || appData.lessons.find(l => l.name === cell.lesson)?.planPath || null)
+    : null;
   document.getElementById("cellModalTitle").textContent = slot+". Ders · "+(DAY_SHORT_NAMES[day]||day);
   buildCellLessonSelect(cell ? cell.lesson : "");
   buildCellColorSwatches();
@@ -1066,7 +1073,12 @@ function buildCellLessonSelect(current){
       this.value = current||"";
       document.getElementById("cellAddLessonWrap").style.display = "block";
       document.getElementById("cellNewLessonInp").focus();
+      return;
     }
+    const lessonObj = appData.lessons.find(l => l.name === this.value);
+    cellModalPlanPath = lessonObj?.planPath || null;
+    const planBtn = document.getElementById("cellPlanBtn");
+    if(planBtn) planBtn.textContent = cellModalPlanPath ? ("✓ "+cellModalPlanPath) : "Plan Seç";
   };
 }
 
@@ -1103,8 +1115,9 @@ function openCellPlanModal(){
     classSelect.value = cellModalPlanPath.split("/")[0] || "";
     if(classSelect.value) loadPlanList();
   }else{
-    classSelect.value = "";
-    document.getElementById("planList").innerHTML = '<div style="color:var(--text-muted); font-size:var(--font-xs); padding:8px;">Önce sınıf seviyesi seçin</div>';
+    classSelect.value = gradeFromLessonName(lessonVal);
+    if(classSelect.value) loadPlanList();
+    else document.getElementById("planList").innerHTML = '<div style="color:var(--text-muted); font-size:var(--font-xs); padding:8px;">Önce sınıf seviyesi seçin</div>';
   }
   const infoEl = document.getElementById("planSelectedInfo");
   if(cellModalPlanPath){ infoEl.textContent="Seçilen: "+cellModalPlanPath; infoEl.style.display="block"; }
@@ -1128,8 +1141,12 @@ function saveCellModal(){
   const entry = { lesson, color: cellModalColor };
   if(cellModalPlanPath) entry.planPath = cellModalPlanPath;
   appData.weeklyGrid[cellModalDay][cellModalSlot] = entry;
+  if(cellModalPlanPath){
+    const lessonObj = appData.lessons.find(l => l.name === lesson);
+    if(lessonObj) lessonObj.planPath = cellModalPlanPath;
+  }
   saveAppData();
-  renderWeeklyGrid();
+  renderSettingsUI();
   closeCellModal();
 }
 
