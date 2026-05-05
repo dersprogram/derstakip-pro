@@ -6,7 +6,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 export const firebaseConfig = {
-  apiKey: "AIzaSyCbObbT42LhRDkrr-9-mbGBIjZQvfzeJyA",
+  apiKey: "AIzaSyCbObbT42LhRDkrr-9-mbG8IjZQvfzeJyA",
   authDomain: "derstakip-pro.firebaseapp.com",
   databaseURL: "https://derstakip-pro-default-rtdb.europe-west1.firebasedatabase.app",
   projectId: "derstakip-pro",
