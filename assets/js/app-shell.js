@@ -496,13 +496,13 @@
     if(!document.querySelector('link[rel="manifest"]')){
       var lnk = document.createElement('link');
       lnk.rel  = 'manifest';
-      lnk.href = '/manifest.json';
+      lnk.href = 'manifest.json';
       document.head.appendChild(lnk);
     }
     if(!document.querySelector('link[rel="apple-touch-icon"]')){
       var atIcon = document.createElement('link');
       atIcon.rel  = 'apple-touch-icon';
-      atIcon.href = '/icons/icon-192.png';
+      atIcon.href = 'icons/icon-192.png';
       document.head.appendChild(atIcon);
     }
     if(!document.querySelector('meta[name="mobile-web-app-capable"]')){
