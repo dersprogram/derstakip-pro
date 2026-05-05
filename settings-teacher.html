@@ -890,6 +890,7 @@ function closePlanModal(){
 }
 
 async function loadPlanList(){
+  if(window.AppAuth?.ready) await window.AppAuth.ready;
   const grade = document.getElementById("planClassSelect").value;
   const listEl = document.getElementById("planList");
 
