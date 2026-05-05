@@ -475,66 +475,13 @@
     return path.includes("welcome");
   }
 
-  let backPressedOnce = false;
-  let backToastTimer = null;
-
-  function showExitToast(){
-    let toast = document.getElementById("exitToast");
-    if(!toast){
-      toast = document.createElement("div");
-      toast.id = "exitToast";
-      Object.assign(toast.style, {
-        position: "fixed",
-        bottom: "88px",
-        left: "50%",
-        transform: "translateX(-50%)",
-        background: "rgba(30,30,30,0.92)",
-        color: "#fff",
-        padding: "10px 22px",
-        borderRadius: "24px",
-        fontSize: "14px",
-        fontFamily: "inherit",
-        zIndex: "9999",
-        pointerEvents: "none",
-        whiteSpace: "nowrap",
-        boxShadow: "0 4px 16px rgba(0,0,0,0.4)",
-        transition: "opacity 0.3s"
-      });
-      document.body.appendChild(toast);
-    }
-    toast.textContent = "Çıkmak için tekrar basın";
-    toast.style.opacity = "1";
-    if(backToastTimer) clearTimeout(backToastTimer);
-    backToastTimer = setTimeout(function(){
-      toast.style.opacity = "0";
-    }, 2000);
-  }
-
   function bindBackButton(){
-    if(isWelcomePage()) return;
+    if(isWelcomePage() || isIndexPage()) return;
 
     history.pushState({ backHandled: true }, "");
 
     window.addEventListener("popstate", function(){
-      if(isIndexPage()){
-        history.pushState({ backHandled: true }, "");
-        if(backPressedOnce){
-          backPressedOnce = false;
-          if(backToastTimer) clearTimeout(backToastTimer);
-          const toast = document.getElementById("exitToast");
-          if(toast) toast.style.opacity = "0";
-          window.close();
-          // window.close() PWA'da çalışmazsa welcome'a dön
-          setTimeout(function(){ window.location.replace("welcome.html"); }, 150);
-        } else {
-          backPressedOnce = true;
-          showExitToast();
-          setTimeout(function(){ backPressedOnce = false; }, 2200);
-        }
-      } else {
-        const suffix = getRoleSuffix();
-        window.location.replace("index" + suffix + ".html");
-      }
+      window.location.replace("index" + getRoleSuffix() + ".html");
     });
   }
 
