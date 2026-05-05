@@ -1,11 +1,11 @@
 {
   "rules": {
     "plan-index": {
-      ".read": "auth != null",
+      ".read": true,
       ".write": "auth != null"
     },
     "yillik-planlar": {
-      ".read": "auth != null",
+      ".read": true,
       ".write": "auth != null"
     },
     "users": {
