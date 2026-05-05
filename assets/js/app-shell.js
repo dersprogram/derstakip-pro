@@ -505,17 +505,13 @@
       atIcon.href = '/icons/icon-192.png';
       document.head.appendChild(atIcon);
     }
-    if(!document.querySelector('meta[name="apple-mobile-web-app-capable"]')){
+    if(!document.querySelector('meta[name="mobile-web-app-capable"]')){
       var mCap = document.createElement('meta');
-      mCap.name    = 'apple-mobile-web-app-capable';
+      mCap.name    = 'mobile-web-app-capable';
       mCap.content = 'yes';
       document.head.appendChild(mCap);
-
-      var mBar = document.createElement('meta');
-      mBar.name    = 'apple-mobile-web-app-status-bar-style';
-      mBar.content = 'black-translucent';
-      document.head.appendChild(mBar);
-
+    }
+    if(!document.querySelector('meta[name="theme-color"]')){
       var mTheme = document.createElement('meta');
       mTheme.name    = 'theme-color';
       mTheme.content = '#050912';
@@ -595,7 +591,7 @@
 
   // ─── Service Worker kaydı ────────────────────────────────────────────────────
 
-  if("serviceWorker" in navigator){
+  if("serviceWorker" in navigator && location.hostname !== "dersprogram.github.io"){
     navigator.serviceWorker.register("/sw.js").catch(function(err){
       console.warn("[SW] Kayıt hatası:", err);
     });
