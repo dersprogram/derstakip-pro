@@ -421,7 +421,7 @@
       return;
     }
     const suffix = getRoleSuffix();
-    window.location.href = "settings" + suffix + ".html?action=showuser";
+    window.location.replace("settings" + suffix + ".html?action=showuser");
   }
 
   function ensureRegisterPrompt(){

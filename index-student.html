@@ -147,7 +147,7 @@
       if(value === undefined || value === null) return;
       url.searchParams.set(key, String(value));
     });
-    window.location.href = url.pathname + "?" + url.searchParams.toString();
+    window.location.replace(url.pathname + "?" + url.searchParams.toString());
   }
 
   function openLessonNoteForm(dayName, lessonName){
