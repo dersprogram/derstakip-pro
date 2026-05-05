@@ -4,6 +4,9 @@
 *.local.json
 notes2html
 
+# Firebase CLI cache
+.firebase/
+
 # Compiled class file
 *.class
 

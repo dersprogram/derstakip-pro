@@ -309,6 +309,8 @@ let planDataGlobal = {};
 
 // Öğretmen: planPath Firebase'den çekilir ve swipe kartı gösterilir
 async function loadPlanFromFirebase(){
+  // Auth token hazır olana kadar bekle (rules auth gerektiriyor)
+  if(window.AppAuth?.ready) await window.AppAuth.ready;
   const appData = AppShell.loadAppData() || {};
   const lessons = appData.lessons || [];
   const params = new URLSearchParams(location.search);

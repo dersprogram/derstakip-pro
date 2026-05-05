@@ -129,30 +129,18 @@ function startTimeOf(slotText){
   return raw.split("-")[0] || raw;
 }
 
-function abbrLessonName(name, portrait){
+function abbrLessonName(name){
   const raw = (name || "").toString().trim();
   if(!raw) return "";
 
   const parts = raw.split(/\s+/).filter(Boolean);
-  if(portrait){
-    if(parts.length === 1){
-      return parts[0].length <= 5 ? parts[0].toUpperCase() : parts[0].substring(0, 5).toUpperCase();
-    }
-    if(parts.length === 2){
-      return (parts[0][0] + "." + parts[1].substring(0, 3)).toUpperCase();
-    }
-    return parts.map((part) => part[0]).join("").toUpperCase();
+  if(parts.length === 1){
+    return parts[0].length <= 5 ? parts[0].toUpperCase() : parts[0].substring(0, 5).toUpperCase();
   }
-
-  const ignoreWords = ["ve", "ile", "veya", "da", "de"];
-  const filtered = parts.filter((part) => !ignoreWords.includes(part.toLowerCase()));
-
-  if(filtered.length === 1) return filtered[0];
-  if(filtered.length === 2) return filtered[0][0].toUpperCase() + ". " + filtered[1];
-  if(filtered.length === 3) return filtered[0][0].toUpperCase() + filtered[1][0].toUpperCase() + ". " + filtered[2];
-  if(filtered.length > 3) return filtered.map((part) => part[0]).join("").toUpperCase();
-
-  return raw;
+  if(parts.length === 2){
+    return (parts[0][0] + "." + parts[1].substring(0, 3)).toUpperCase();
+  }
+  return parts.map((part) => part[0]).join("").toUpperCase();
 }
 
 // Öğretmen: sınıf adı (cls) + ders adı birlikte gösterilir
@@ -166,10 +154,6 @@ function renderLessonHTML(cls, lessonText, lessonColor){
 }
 
 function renderGrid(){
-  const isLandscape = window.matchMedia("(orientation: landscape)").matches;
-  const portrait = !isLandscape;
-  document.body.classList.toggle("portrait", portrait);
-
   const grid = document.getElementById("grid");
   grid.innerHTML = "";
   grid.style.removeProperty("--portrait-lesson-font");
@@ -193,17 +177,16 @@ function renderGrid(){
   const timeSlots = generateTimeSlots(slotCount, settings);
   const lunchAfter = Math.max(0, parseInt(appData?.settings?.lunchNo ?? 5, 10));
   const hasLunchBreak = lunchAfter > 0 && lunchAfter < slotCount;
-  const leftColWidth = portrait ? "44px" : "58px";
   const dayColWidth = "minmax(0, 1fr)";
 
-  grid.style.gridTemplateColumns = leftColWidth + " repeat(" + Math.max(daysShown.length, 1) + ", " + dayColWidth + ")";
-  grid.style.gridTemplateRows = portrait ? "34px" : "22px";
+  grid.style.gridTemplateColumns = "44px repeat(" + Math.max(daysShown.length, 1) + ", " + dayColWidth + ")";
+  grid.style.gridTemplateRows = "34px";
 
   const rowsTemplate = [];
   for(let slotIndex = 0; slotIndex < slotCount; slotIndex += 1){
-    rowsTemplate.push(portrait ? "50px" : "minmax(0, 1fr)");
+    rowsTemplate.push("50px");
     if(hasLunchBreak && slotIndex + 1 === lunchAfter){
-      rowsTemplate.push(portrait ? "28px" : "minmax(0, 0.7fr)");
+      rowsTemplate.push("28px");
     }
   }
   grid.style.gridTemplateRows += " " + rowsTemplate.join(" ");
@@ -214,7 +197,7 @@ function renderGrid(){
     const cell = createCell("cell headCell headRow");
     if(dayIndex === 0) cell.classList.add("headStart");
     if(dayIndex === daysShown.length - 1) cell.classList.add("headEnd");
-    cell.textContent = portrait ? dayShort(dayName) : dayName;
+    cell.textContent = dayShort(dayName);
     grid.appendChild(cell);
   });
 
@@ -240,7 +223,7 @@ function renderGrid(){
           ? rawLesson.slice(0, sep)
           : (currentRow.class || "").trim();
         const lessonName = sep !== -1 ? rawLesson.slice(sep + 3) : rawLesson;
-        const lessonText = abbrLessonName(lessonName, portrait);
+        const lessonText = abbrLessonName(lessonName);
         const lessonColor = lessonColorOf(appData, rawLesson, currentRow.color);
         cell.innerHTML = renderLessonHTML(cls, lessonText, lessonColor);
       }
@@ -257,7 +240,6 @@ function renderGrid(){
   }
 }
 
-window.addEventListener("resize", renderGrid);
 renderGrid();
 
 const floatingBack = document.querySelector(".floatingBack");

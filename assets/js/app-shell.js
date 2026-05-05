@@ -100,7 +100,12 @@
   }
 
   function saveAppData(appData){
+    appData.lastModified = Date.now();
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(appData));
+    // Eğer online ise sync.js yüklüyse Firebase'e gönder (fire-and-forget)
+    if(navigator.onLine && window.AppSync){
+      window.AppSync.pushNow(appData).catch(function(){});
+    }
     return appData;
   }
 
@@ -485,6 +490,39 @@
 
   // ─── Init ────────────────────────────────────────────────────────────────
 
+  // ─── PWA meta enjeksiyonu ────────────────────────────────────────────────────
+
+  function injectPWAMeta(){
+    if(!document.querySelector('link[rel="manifest"]')){
+      var lnk = document.createElement('link');
+      lnk.rel  = 'manifest';
+      lnk.href = '/manifest.json';
+      document.head.appendChild(lnk);
+    }
+    if(!document.querySelector('link[rel="apple-touch-icon"]')){
+      var atIcon = document.createElement('link');
+      atIcon.rel  = 'apple-touch-icon';
+      atIcon.href = '/icons/icon-192.png';
+      document.head.appendChild(atIcon);
+    }
+    if(!document.querySelector('meta[name="apple-mobile-web-app-capable"]')){
+      var mCap = document.createElement('meta');
+      mCap.name    = 'apple-mobile-web-app-capable';
+      mCap.content = 'yes';
+      document.head.appendChild(mCap);
+
+      var mBar = document.createElement('meta');
+      mBar.name    = 'apple-mobile-web-app-status-bar-style';
+      mBar.content = 'black-translucent';
+      document.head.appendChild(mBar);
+
+      var mTheme = document.createElement('meta');
+      mTheme.name    = 'theme-color';
+      mTheme.content = '#ff7a00';
+      document.head.appendChild(mTheme);
+    }
+  }
+
   function initAppShell(){
     // Rol guard — welcome hariç her sayfada çalışır
     guardRoleSelection();
@@ -499,6 +537,10 @@
     bindThemeToggle();
     ensureRegisterPrompt();
     bindBackButton();
+    injectPWAMeta();
+
+    // sync.js'i dinamik olarak yükle (ES module, fire-and-forget)
+    import('./sync.js').catch(function(){});
   }
 
   // ─── Public API ──────────────────────────────────────────────────────────
@@ -550,4 +592,12 @@
     if(event.key === FONT_KEY) applyFontSize(event.newValue || "medium", false);
     if(event.key === SETTINGS_KEY) syncAuthState();
   });
+
+  // ─── Service Worker kaydı ────────────────────────────────────────────────────
+
+  if("serviceWorker" in navigator){
+    navigator.serviceWorker.register("/sw.js").catch(function(err){
+      console.warn("[SW] Kayıt hatası:", err);
+    });
+  }
 })();
