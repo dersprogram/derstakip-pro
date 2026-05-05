@@ -6,13 +6,13 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 export const firebaseConfig = {
-  apiKey: "AIzaSyDVPbMlOf6pczo_Yh_Z62VAg30ah5KLQJc",
-  authDomain: "derstakippro-bbbb3.firebaseapp.com",
-  databaseURL: "https://derstakippro-bbbb3-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "derstakippro-bbbb3",
-  storageBucket: "derstakippro-bbbb3.firebasestorage.app",
-  messagingSenderId: "706136035599",
-  appId: "1:706136035599:web:954c01af172c66b8922e7a"
+  apiKey: "AIzaSyCbObbT42LhRDkrr-9-mbGBIjZQvfzeJyA",
+  authDomain: "derstakip-pro.firebaseapp.com",
+  projectId: "derstakip-pro",
+  storageBucket: "derstakip-pro.firebasestorage.app",
+  messagingSenderId: "195676093041",
+  appId: "1:195676093041:web:8376b2bc719ec8b1e139d0",
+  measurementId: "G-QLSQ05VNQQ"
 };
 
 const PLACEHOLDER_VALUES = [
