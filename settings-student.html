@@ -991,6 +991,18 @@ function renderWeeklyGrid(){
 }
 
 function openCellModal(day, slot){
+  if(isGuest() && !AppShell.isGuestEditableDay(appData, day)){
+    const grid = appData.weeklyGrid || {};
+    const hasData = Object.values(grid).some(function(dayGrid){
+      return Object.values(dayGrid || {}).some(function(cell){ return cell && cell.lesson; });
+    });
+    if(hasData){
+      AppShell.showRegisterPrompt();
+    } else {
+      AppShell.customAlert("Denemek için sadece bulunduğun güne veri girebilirsin.");
+    }
+    return;
+  }
   cellModalDay = day;
   cellModalSlot = slot;
   const cell = getWeeklyCell(day, slot);
