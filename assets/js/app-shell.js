@@ -96,6 +96,26 @@
     });
   }
 
+  function customAlert(message){
+    return new Promise(function(resolve){
+      var overlay = document.createElement('div');
+      overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);padding:20px;';
+      var box = document.createElement('div');
+      box.style.cssText = 'background:var(--color-panel-top,#0e121c);border:1px solid var(--border-normal,rgba(255,255,255,.14));border-radius:14px;padding:24px 20px 20px;max-width:320px;width:100%;box-shadow:0 20px 48px rgba(0,0,0,.6);';
+      var msg = document.createElement('p');
+      msg.style.cssText = 'margin:0 0 20px;color:var(--text-primary,#fff);font-size:.9rem;line-height:1.5;white-space:pre-line;';
+      msg.textContent = message;
+      var ok = document.createElement('button');
+      ok.textContent = 'Tamam';
+      ok.style.cssText = 'width:100%;padding:10px;border-radius:8px;border:none;background:var(--color-accent,#ff7a00);color:#000;font-size:.85rem;font-weight:900;cursor:pointer;';
+      ok.onclick = function(){ document.body.removeChild(overlay); resolve(); };
+      box.appendChild(msg);
+      box.appendChild(ok);
+      overlay.appendChild(box);
+      document.body.appendChild(overlay);
+    });
+  }
+
   // ─── Rol sıfırlama ───────────────────────────────────────────────────────
 
   function resetRoleAndData(){
@@ -588,6 +608,7 @@
     getActiveDayNames,
     isActiveDay,
     customConfirm,
+    customAlert,
     getGuestSourceDayName,
     isGuestEditableDay,
     getScheduleRowsForDay,

@@ -1043,6 +1043,10 @@ function renderWeeklyGrid(){
 }
 
 function openCellModal(day, slot){
+  if(isGuest() && !AppShell.isGuestEditableDay(appData, day)){
+    AppShell.customAlert("Denemek için sadece bulunduğun güne veri girebilirsin.");
+    return;
+  }
   cellModalDay = day;
   cellModalSlot = slot;
   const cell = getWeeklyCell(day, slot);
