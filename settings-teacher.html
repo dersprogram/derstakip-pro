@@ -716,7 +716,7 @@ async function logoutUser(){
 }
 
 async function confirmDeleteAccount(){
-  const confirmDelete = confirm("Hesabınızı silmek istediğinize emin misiniz? Bu işlem geri alınamaz.");
+  const confirmDelete = await AppShell.customConfirm("Hesabınızı silmek istediğinize emin misiniz? Bu işlem geri alınamaz.");
   if(!confirmDelete) return;
 
   // Google kullanıcıları için şifre sorma — popup ile doğrulama yapılır.
