@@ -518,7 +518,7 @@
 
       var mTheme = document.createElement('meta');
       mTheme.name    = 'theme-color';
-      mTheme.content = '#ff7a00';
+      mTheme.content = '#1a1a1a';
       document.head.appendChild(mTheme);
     }
   }
