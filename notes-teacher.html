@@ -351,6 +351,23 @@ async function loadPlanFromFirebase(){
     return;
   }
 
+  const cacheKey = "planCache_" + planPath;
+
+  // Çevrimdışıysa doğrudan cache'e bak
+  if(!navigator.onLine){
+    const cached = localStorage.getItem(cacheKey);
+    if(cached){
+      try{
+        const planArr = JSON.parse(cached);
+        planDataGlobal = planArr;
+        renderSwipe(planArr);
+        return;
+      }catch(e){}
+    }
+    renderSwipe([]);
+    return;
+  }
+
   try{
     const { getDatabase, ref, get } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js");
     const { app } = await import("./assets/js/firebase.js");
@@ -369,10 +386,22 @@ async function loadPlanFromFirebase(){
     }else{
       planArr = Array.isArray(val) ? val : Object.values(val);
     }
+    // Sonraki çevrimdışı kullanım için cache'e kaydet
+    try{ localStorage.setItem(cacheKey, JSON.stringify(planArr)); }catch(e){}
     planDataGlobal = planArr;
     renderSwipe(planArr);
   }catch(err){
     console.error("Plan yükleme hatası:", err);
+    // Ağ hatası: varsa cache'ten yükle
+    const cached = localStorage.getItem(cacheKey);
+    if(cached){
+      try{
+        const planArr = JSON.parse(cached);
+        planDataGlobal = planArr;
+        renderSwipe(planArr);
+        return;
+      }catch(e){}
+    }
     renderSwipe([]);
   }
 }
