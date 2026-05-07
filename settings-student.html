@@ -149,7 +149,7 @@ if(window.location.hostname === "127.0.0.1"){
                 </div>
 
                 <div class="menu">
-                  <button onclick="goRegister()" style="background:var(--color-accent); color:#000; font-weight:700;">
+                  <button onclick="setRegisterFormVisible(true)" style="background:var(--color-accent); color:#000; font-weight:700;">
                     Kayıt Ol
                   </button>
                 </div>
@@ -195,6 +195,11 @@ if(window.location.hostname === "127.0.0.1"){
                 </div>
                 </form>
                 <div class="registerFormError" id="loginError" style="display:none;"></div>
+                <div class="registerFormError" id="resetError" style="display:none;"></div>
+                <div class="accountPanelSuccess" id="resetSuccess" style="display:none;"></div>
+                <div style="text-align:right; margin-top:4px; margin-bottom:2px;">
+                  <a href="#" onclick="sendPasswordReset(); return false;" style="font-size:.72rem; color:var(--color-accent); text-decoration:none; opacity:.85;">Şifremi Unuttum</a>
+                </div>
                 <div class="registerFormActions">
                   <button type="button" onclick="submitLogin()" style="background:var(--color-accent); color:#000; font-weight:700;">Giriş Yap</button>
                   <button type="button" class="ghostBtn" onclick="cancelLogin()">Vazgeç</button>
@@ -490,14 +495,15 @@ function setLoginFormVisible(visible){
   const registerForm = document.getElementById("guestRegisterForm");
   const loginForm = document.getElementById("guestLoginForm");
   const error = document.getElementById("loginError");
+  const resetError = document.getElementById("resetError");
+  const resetSuccess = document.getElementById("resetSuccess");
 
   if(summary) summary.style.display = visible ? "none" : "block";
   if(registerForm) registerForm.style.display = "none";
   if(loginForm) loginForm.style.display = visible ? "block" : "none";
-  if(error){
-    error.style.display = "none";
-    error.textContent = "";
-  }
+  if(error){ error.style.display = "none"; error.textContent = ""; }
+  if(resetError){ resetError.style.display = "none"; resetError.textContent = ""; }
+  if(resetSuccess){ resetSuccess.style.display = "none"; resetSuccess.textContent = ""; }
 }
 
 function syncAuthActionState(){
@@ -1450,6 +1456,40 @@ async function submitRegister(){
         setTimeout(() => { googleBtn.style.outline = ""; }, 3000);
       }
     }
+  }
+}
+
+async function sendPasswordReset(){
+  const email = (document.getElementById("loginEmail")?.value || "").trim();
+  const resetError = document.getElementById("resetError");
+  const resetSuccess = document.getElementById("resetSuccess");
+
+  if(resetError){ resetError.style.display = "none"; resetError.textContent = ""; }
+  if(resetSuccess){ resetSuccess.style.display = "none"; resetSuccess.textContent = ""; }
+  document.getElementById("loginError").style.display = "none";
+
+  if(!email){
+    if(resetError){ resetError.textContent = "Önce e-posta adresinizi girin."; resetError.style.display = "block"; }
+    return;
+  }
+
+  if(!validateEmail(email)){
+    if(resetError){ resetError.textContent = "Geçerli bir e-posta adresi girin."; resetError.style.display = "block"; }
+    return;
+  }
+
+  try{
+    const { sendPasswordResetEmail } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");
+    const { auth } = await import("./assets/js/firebase.js");
+    await sendPasswordResetEmail(auth, email);
+    if(resetSuccess){ resetSuccess.textContent = "Sıfırlama e-postası gönderildi. Gelen kutunuzu kontrol edin."; resetSuccess.style.display = "block"; }
+  }catch(err){
+    let msg = "Bir hata oluştu. Lütfen tekrar deneyin.";
+    const code = err?.code || "";
+    if(code === "auth/user-not-found" || code === "auth/invalid-credential") msg = "Bu e-posta ile kayıtlı hesap bulunamadı.";
+    else if(code === "auth/invalid-email") msg = "Geçersiz e-posta adresi.";
+    else if(code === "auth/too-many-requests") msg = "Çok fazla istek gönderildi. Lütfen bekleyin.";
+    if(resetError){ resetError.textContent = msg; resetError.style.display = "block"; }
   }
 }
 
