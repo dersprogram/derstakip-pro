@@ -992,15 +992,7 @@ function renderWeeklyGrid(){
 
 function openCellModal(day, slot){
   if(isGuest() && !AppShell.isGuestEditableDay(appData, day)){
-    const grid = appData.weeklyGrid || {};
-    const hasData = Object.values(grid).some(function(dayGrid){
-      return Object.values(dayGrid || {}).some(function(cell){ return cell && cell.lesson; });
-    });
-    if(hasData){
-      AppShell.showRegisterPrompt();
-    } else {
-      AppShell.customAlert("Denemek için sadece bulunduğun güne veri girebilirsin.");
-    }
+    AppShell.showRegisterPrompt("Tüm günlere program girebilmek için kayıt olun.");
     return;
   }
   cellModalDay = day;
@@ -1379,23 +1371,17 @@ function hydrateControlsFromData(){
 function goRegister(){
   AppShell.hideRegisterPrompt();
 
-  const registerForm = document.getElementById("guestRegisterForm");
-  if(registerForm){
-    const card = registerForm.closest(".card");
+  const guestContent = document.getElementById("guestContent");
+  if(guestContent){
+    const card = guestContent.closest(".card");
     if(card && !card.classList.contains("open")){
       card.classList.add("open");
       card.querySelector(".arrow")?.classList.add("open");
     }
+    setRegisterFormVisible(false);
+    setLoginFormVisible(false);
+    setTimeout(() => guestContent.scrollIntoView({ behavior: "smooth", block: "start" }), 100);
   }
-
-  const nameInput = document.getElementById("registerName");
-  const emailInput = document.getElementById("registerEmail");
-  const passwordInput = document.getElementById("registerPassword");
-
-  if(nameInput) nameInput.value = appData.settings.name || "";
-  if(emailInput) emailInput.value = appData.settings.email || "";
-  if(passwordInput) passwordInput.value = "";
-  setRegisterFormVisible(true);
 }
 
 function openLogin(){
@@ -1725,12 +1711,16 @@ window.addEventListener("load", () => {
   document.body.classList.add("loaded");
   if(new URLSearchParams(window.location.search).get("action") === "showuser"){
     history.replaceState(null, "", window.location.pathname);
-    const userCard = document.getElementById("userContent")?.closest(".card");
-    if(userCard && !userCard.classList.contains("open")){
-      userCard.classList.add("open");
-      userCard.querySelector(".arrow")?.classList.add("open");
-      setTimeout(() => userCard.scrollIntoView({ behavior: "smooth", block: "start" }), 80);
+    const targetEl = isGuest()
+      ? document.getElementById("guestContent")
+      : document.getElementById("userContent");
+    const targetCard = targetEl?.closest(".card");
+    if(targetCard && !targetCard.classList.contains("open")){
+      targetCard.classList.add("open");
+      targetCard.querySelector(".arrow")?.classList.add("open");
     }
+    if(isGuest()){ setRegisterFormVisible(false); setLoginFormVisible(false); }
+    setTimeout(() => targetEl?.scrollIntoView({ behavior: "smooth", block: "start" }), 80);
   }
 });
 </script>
