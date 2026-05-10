@@ -1,5 +1,6 @@
 :root{
   --base-font-size: 15px;
+  --color-bg: #050912;
 
   --bg0: #050912;
   --bg1: #0b1220;
@@ -32,6 +33,7 @@
 }
 
 :root[data-theme="dark"]{
+  --color-bg: #050912;
   --color-bg-app: #050912;
   --color-bg-surface: #0b1220;
   --color-bg-card: #0e1624;
@@ -76,6 +78,7 @@
 }
 
 :root[data-theme="light"]{
+  --color-bg: #f4f6f9;
   --color-bg-app: #f4f6f9;
   --color-bg-surface: #ffffff;
   --color-bg-card: #ffffff;

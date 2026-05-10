@@ -10,9 +10,9 @@
     s.id = '__early_bg';
     s.textContent = 'body{background:' + bg + '!important}';
     document.head.appendChild(s);
-    var m = document.querySelector('meta[name="theme-color"]');
-    if(!m){ m = document.createElement('meta'); m.name = 'theme-color'; document.head.appendChild(m); }
-    m.content = bg;
+    var mList = document.querySelectorAll('meta[name="theme-color"]');
+    if(mList.length === 0){ var m = document.createElement('meta'); m.name = 'theme-color'; m.content = bg; document.head.appendChild(m); }
+    else { mList.forEach(function(m){ m.content = bg; }); }
   })();
 
   const APP_VERSION = "20260409-2";
@@ -273,8 +273,7 @@
     const nextTheme = normalizeTheme(theme);
     document.documentElement.dataset.theme = nextTheme;
     if(persist !== false) localStorage.setItem(THEME_KEY, nextTheme);
-    var mTheme = document.querySelector('meta[name="theme-color"]');
-    if(mTheme) mTheme.content = nextTheme === 'light' ? '#f4f6f9' : '#050912';
+    document.querySelectorAll('meta[name="theme-color"]').forEach(function(m){ m.content = nextTheme === 'light' ? '#f4f6f9' : '#050912'; });
     syncThemeToggleButton();
     return nextTheme;
   }
@@ -337,7 +336,11 @@
       item.dataset.shellBoundNav = "true";
       item.addEventListener("click", function(){
         const next = targets[item.dataset.nav];
-        if(next) location.replace(next);
+        if(next){
+          var tc = document.querySelector('meta[name="theme-color"]');
+          if(tc) tc.content = (localStorage.getItem('appTheme') === 'light') ? '#f4f6f9' : '#050912';
+          location.replace(next);
+        }
       });
     });
   }

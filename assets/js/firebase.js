@@ -7,7 +7,7 @@ import {
 
 export const firebaseConfig = {
   apiKey: "AIzaSyCbObbT42LhRDkrr-9-mbG8IjZQvfzeJyA",
-  authDomain: "derstakip-pro.firebaseapp.com",
+  authDomain: "derstakippro.com",
   databaseURL: "https://derstakip-pro-default-rtdb.europe-west1.firebasedatabase.app",
   projectId: "derstakip-pro",
   storageBucket: "derstakip-pro.firebasestorage.app",

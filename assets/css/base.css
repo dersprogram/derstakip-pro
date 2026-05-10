@@ -1,3 +1,22 @@
+html {
+  background-color: #050912;
+  background-color: var(--color-bg, #050912);
+}
+
+html[data-theme="light"] {
+  background-color: #f4f6f9;
+}
+
+body {
+  background-color: #050912;
+  background-color: var(--color-bg, #050912);
+}
+
+body[data-theme="light"],
+html[data-theme="light"] body {
+  background-color: #f4f6f9;
+}
+
 @font-face{
   font-family: "Material Symbols Rounded";
   src: url("../../font/material-symbols-rounded-latin-400-normal.woff2") format("woff2");
