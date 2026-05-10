@@ -6,6 +6,10 @@
     var de = document.documentElement;
     de.style.overflow   = 'hidden';
     de.style.background = bg;
+    var s = document.createElement('style');
+    s.id = '__early_bg';
+    s.textContent = 'body{background:' + bg + '!important}';
+    document.head.appendChild(s);
     var m = document.querySelector('meta[name="theme-color"]');
     if(!m){ m = document.createElement('meta'); m.name = 'theme-color'; document.head.appendChild(m); }
     m.content = bg;
@@ -533,6 +537,8 @@
   function initAppShell(){
     document.documentElement.style.overflow = '';
     document.documentElement.style.background = '';
+    var early = document.getElementById('__early_bg');
+    if(early) early.remove();
     // Rol guard — welcome hariç her sayfada çalışır
     guardRoleSelection();
 
