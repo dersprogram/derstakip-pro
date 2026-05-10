@@ -1,5 +1,11 @@
 (function(){
   document.documentElement.style.overflow = 'hidden';
+  (function(){
+    var m = document.querySelector('meta[name="theme-color"]');
+    if(!m){ m = document.createElement('meta'); m.name = 'theme-color'; document.head.appendChild(m); }
+    var stored = null; try{ stored = localStorage.getItem('appTheme'); }catch(e){}
+    m.content = stored === 'light' ? '#f4f6f9' : '#050912';
+  })();
 
   const APP_VERSION = "20260409-2";
   const THEME_KEY = "appTheme";
@@ -259,6 +265,8 @@
     const nextTheme = normalizeTheme(theme);
     document.documentElement.dataset.theme = nextTheme;
     if(persist !== false) localStorage.setItem(THEME_KEY, nextTheme);
+    var mTheme = document.querySelector('meta[name="theme-color"]');
+    if(mTheme) mTheme.content = nextTheme === 'light' ? '#f4f6f9' : '#050912';
     syncThemeToggleButton();
     return nextTheme;
   }
