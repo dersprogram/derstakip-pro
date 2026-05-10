@@ -304,7 +304,7 @@ body.portrait .lessonCell{
 .lunchBreakRow{
   background: rgba(var(--color-accent-rgb), 0.05);
   color: var(--color-accent);
-  border: 1px solid rgba(var(--color-accent-rgb), 0.3);
+  border: 1px solid var(--color-accent);
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
