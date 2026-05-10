@@ -1,4 +1,6 @@
 (function(){
+  document.documentElement.style.overflow = 'hidden';
+
   const APP_VERSION = "20260409-2";
   const THEME_KEY = "appTheme";
   const FONT_KEY = "appFontSize";
@@ -517,6 +519,7 @@
   }
 
   function initAppShell(){
+    document.documentElement.style.overflow = '';
     // Rol guard — welcome hariç her sayfada çalışır
     guardRoleSelection();
 
