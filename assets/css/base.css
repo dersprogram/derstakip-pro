@@ -39,7 +39,6 @@ body{
     radial-gradient(1200px 900px at 50% 120%, rgba(120,160,255,.08), transparent 55%),
     linear-gradient(180deg, var(--color-bg-app), var(--color-bg-surface));
   background-repeat: no-repeat;
-  background-attachment: fixed;
 }
 
 button,

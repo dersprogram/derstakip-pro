@@ -1,10 +1,14 @@
 (function(){
-  document.documentElement.style.overflow = 'hidden';
   (function(){
+    var stored = null; try{ stored = localStorage.getItem('appTheme'); }catch(e){}
+    var isDark = stored !== 'light';
+    var bg = isDark ? '#050912' : '#f4f6f9';
+    var de = document.documentElement;
+    de.style.overflow   = 'hidden';
+    de.style.background = bg;
     var m = document.querySelector('meta[name="theme-color"]');
     if(!m){ m = document.createElement('meta'); m.name = 'theme-color'; document.head.appendChild(m); }
-    var stored = null; try{ stored = localStorage.getItem('appTheme'); }catch(e){}
-    m.content = stored === 'light' ? '#f4f6f9' : '#050912';
+    m.content = bg;
   })();
 
   const APP_VERSION = "20260409-2";
@@ -528,6 +532,7 @@
 
   function initAppShell(){
     document.documentElement.style.overflow = '';
+    document.documentElement.style.background = '';
     // Rol guard — welcome hariç her sayfada çalışır
     guardRoleSelection();
 
