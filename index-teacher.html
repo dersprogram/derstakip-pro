@@ -9,7 +9,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Ders Takip - Anasayfa</title>
+<title>Ders Takip Pro</title>
 <script type="module" src="assets/js/firebase.js?v=20260409-2"></script>
 <script src="assets/js/app-shell.js?v=20260409-2"></script>
 <script type="module" src="assets/js/auth.js?v=20260409-2"></script>
@@ -393,10 +393,6 @@
     const lessonKey = "__DAY__-" + dayName;
 
     if(isAlreadyActive){
-      if(isGuest && dayName !== todayName){
-        AppShell.showRegisterPrompt("Bu günün tüm notlarını açmak için kayıt olun.");
-        return;
-      }
       openLessonNoteForm(dayName, lessonKey);
     }else{
       setDayByIndex(index, { scroll: true });
@@ -455,11 +451,6 @@
     const lesson = row.dataset.lessonKey || "";
 
     if(!lesson || lesson === "-" || !dayName) return;
-    if(isGuest && dayName !== todayName){
-      AppShell.showRegisterPrompt("Bu gün dışındaki ders notlarını açmak için kayıt olun.");
-      return;
-    }
-
     openLessonNoteForm(dayName, buildLessonKey(lesson));
   });
 })();

@@ -44,7 +44,7 @@
   opacity:1;
 }
 </style>
-<title>Öğrenci - Ayarlar Paneli</title>
+<title>Ders Takip Pro</title>
 <script>
 if(window.location.hostname === "127.0.0.1"){
   const canonicalUrl = new URL(window.location.href);
@@ -89,7 +89,7 @@ if(window.location.hostname === "127.0.0.1"){
               <div class="roleRow">
                 <div class="role-label">ROL</div>
                 <div class="role-chips">
-                  <button class="chip active" data-role="student">Öğrenci</button>
+                  <button class="chip active guestRoleChip" data-role="student" onclick="openRoleActionSheet()">Öğrenci <span class="icon guestRoleIcon">edit</span></button>
                   <div id="studentClassWrap">
                     <input id="studentClassInput" placeholder="10-A" maxlength="5"/>
                   </div>
@@ -100,7 +100,6 @@ if(window.location.hostname === "127.0.0.1"){
                 <button type="button" id="changePasswordBtn" onclick="togglePasswordPanel()">Şifre Değiştir</button>
                 <button type="button" onclick="logoutUser()">Çıkış Yap</button>
                 <button type="button" class="danger" id="deleteAccountBtn" onclick="toggleDeletePanel()">Hesabı Sil</button>
-                <button type="button" class="danger" onclick="AppShell.resetRoleAndData()" style="margin-top:4px;">Rolü Sıfırla</button>
               </div>
 
               <div id="passwordPanel" class="accountPanel" style="display:none;">
@@ -137,39 +136,29 @@ if(window.location.hostname === "127.0.0.1"){
                   <div class="avatar" style="background:#666;color:#fff;">G</div>
                   <div>
                     <div class="user-name">Misafir Kullanıcı</div>
-                    <div class="user-email">Sınırlı kullanım</div>
+                    <div class="user-email">Veriler bu cihazda saklanıyor</div>
                   </div>
                 </div>
 
                 <div class="roleRow">
                   <div class="role-label">ROL</div>
                   <div class="role-chips">
-                    <button class="chip active" data-role="student">Öğrenci</button>
+                    <button class="chip active guestRoleChip" data-role="student" data-bound-role-button="true" onclick="openRoleActionSheet()">
+                      Öğrenci <span class="icon guestRoleIcon">edit</span>
+                    </button>
                     <div id="guestStudentClassWrap">
                       <input id="guestStudentClassInput" placeholder="10-A" maxlength="5"/>
                     </div>
                   </div>
                 </div>
 
-                <div class="menu">
-                  <button onclick="setRegisterFormVisible(true)" style="background:var(--color-accent); color:#000; font-weight:700;">
-                    Kayıt Ol
-                  </button>
-                </div>
-
-                <div class="menu">
-                  <button type="button" onclick="loginWithGoogle()" style="background:#fff; color:#111; font-weight:700;">
-                    Google ile giriş yap
-                  </button>
-                </div>
-
-                <div class="menu">
-                  <button type="button" class="danger" onclick="AppShell.resetRoleAndData()">Rolü Sıfırla</button>
-                </div>
-
-              <div class="guestSecondaryAction">
-                  <span>Zaten hesabın var mı?</span>
-                  <a href="#" onclick="openLogin(); return false;">Giriş Yap</a>
+                <div class="guestCloudCard">
+                  <p class="guestCloudDesc">Kayıt olun, verileriniz yedeklensin ve güncel kalsın.</p>
+                  <button class="guestGoogleBtn" type="button" onclick="loginWithGoogle()">Google ile devam et</button>
+                  <button class="guestRegisterBtn" type="button" onclick="setRegisterFormVisible(true)">E-posta ile kayıt</button>
+                  <div class="guestLoginAction">
+                    <a href="#" onclick="openLogin(); return false;">Giriş Yap</a>
+                  </div>
                 </div>
               </div>
 
@@ -326,7 +315,19 @@ if(window.location.hostname === "127.0.0.1"){
 </div>
 
 <div class="pop-color" id="colorPop"></div>
-<input id="hiddenPicker" style="display:none" type="color"/>
+<input id="hiddenPicker" type="color" class="hiddenColorInput"/>
+<input id="cellColorPicker" type="color" class="hiddenColorInput"/>
+
+<div id="roleActionSheet" class="rasOverlay" style="display:none;" onclick="if(event.target===this||event.target.classList.contains('rasBackdrop'))closeRoleActionSheet()">
+  <div class="rasBackdrop"></div>
+  <div class="rasCard">
+    <div class="rasHandle"></div>
+    <div class="rasTitle">Rol Ayarları</div>
+    <div class="rasDesc">Başka bir rol seçmek için mevcut rol bilgisi temizlenir ve giriş ekranına yönlendirilirsiniz.</div>
+    <button class="rasResetBtn" type="button" onclick="roleActionSheetConfirm()">Rol Seçimini Sıfırla</button>
+    <button class="rasCancelBtn" type="button" onclick="closeRoleActionSheet()">Vazgeç</button>
+  </div>
+</div>
 
 <div class="nav">
   <div class="navItem" data-nav="index">
@@ -350,7 +351,6 @@ if(window.location.hostname === "127.0.0.1"){
 <script>
 const STORAGE_KEY = "ayarlar";
 const dayNames = AppShell.DAY_NAMES;
-const GUEST_SCHEDULE_LIMIT = 8;
 
 const appData = AppShell.safeJsonParse(localStorage.getItem(STORAGE_KEY), null) || {
   settings: {
@@ -769,11 +769,6 @@ function toggleDay(index){
 }
 
 function openPicker(event, target){
-  if(isGuest() && target !== "main"){
-    showGuestPrompt("Ders renklerini tam kullanmak için kayıt olun.");
-    return;
-  }
-
   event.stopPropagation();
   currentTarget = target;
   pop.innerHTML = "";
@@ -786,9 +781,10 @@ function openPicker(event, target){
     pop.appendChild(swatch);
   });
 
-  const multi = document.createElement("div");
+  const multi = document.createElement("label");
   multi.className = "sw multi";
-  multi.onclick = () => hiddenPicker.click();
+  multi.setAttribute("for", "hiddenPicker");
+  multi.onclick = e => e.stopPropagation();
   pop.appendChild(multi);
 
   pop.style.display = "grid";
@@ -802,10 +798,6 @@ function applyColor(color){
     appData.lastColor = color;
     document.getElementById("mainColorTrigger").style.background = color;
   }else{
-    if(isGuest()){
-      showGuestPrompt("Ders renklerini tam kullanmak için kayıt olun.");
-      return;
-    }
     appData.lessons[currentTarget].color = color;
     renderSettingsUI();
   }
@@ -1000,10 +992,6 @@ function renderWeeklyGrid(){
 }
 
 function openCellModal(day, slot){
-  if(isGuest() && !AppShell.isGuestEditableDay(appData, day)){
-    AppShell.showRegisterPrompt("Tüm günlere program girebilmek için kayıt olun.");
-    return;
-  }
   cellModalDay = day;
   cellModalSlot = slot;
   const cell = getWeeklyCell(day, slot);
@@ -1043,16 +1031,13 @@ function buildCellColorSwatches(){
     sw.onclick = e => { e.stopPropagation(); cellModalColor=color; buildCellColorSwatches(); };
     wrap.appendChild(sw);
   });
-  const multi = document.createElement("div");
+  const multi = document.createElement("label");
+  multi.setAttribute("for", "cellColorPicker");
   multi.style.cssText = "width:26px;height:26px;border-radius:50%;cursor:pointer;background:conic-gradient(red,yellow,lime,cyan,blue,magenta,red);flex-shrink:0;";
-  multi.onclick = e => {
-    e.stopPropagation();
-    const p = document.createElement("input"); p.type="color"; p.value=cellModalColor; p.style.display="none";
-    document.body.appendChild(p);
-    p.oninput = () => { cellModalColor=p.value; buildCellColorSwatches(); };
-    p.onchange = () => document.body.removeChild(p);
-    p.click();
-  };
+  multi.onclick = e => e.stopPropagation();
+  const cellColorPicker = document.getElementById("cellColorPicker");
+  cellColorPicker.value = cellModalColor;
+  cellColorPicker.oninput = () => { cellModalColor = cellColorPicker.value; buildCellColorSwatches(); };
   wrap.appendChild(multi);
 }
 
@@ -1144,7 +1129,7 @@ function addItem(type, inputId){
       const rect = last.getBoundingClientRect();
       const navClearance = 62 + 14 + 16;
       const overshoot = rect.bottom - (window.innerHeight - navClearance);
-      if(overshoot > 0) window.scrollBy({ top: overshoot, behavior: "smooth" });
+      if(overshoot > 0) document.body.scrollBy({ top: overshoot, behavior: "smooth" });
     }));
   }
 }
@@ -1243,30 +1228,23 @@ function renderSchedule(){
   const slots = generateTimeSlots(dayData.length);
   const isStudent = appData.settings.role === "student";
   const sortedLessons = getSortedLessons();
-  const editable = isEditableDay(day);
   container.innerHTML = "";
 
   dayData.forEach((row, index) => {
     const div = document.createElement("div");
     div.className = "row table-grid " + (isStudent ? "student" : "teacher");
 
-    const lessonCell = editable
-      ? '<select class="ctrl" onchange="upd(' + index + ',\'lesson\',this.value)">' +
-        '<option value="">Ders Seç</option>' +
-        sortedLessons.map(({ entry }) => '<option ' + (row.lesson === entry.name ? "selected" : "") + ">" + entry.name + "</option>").join("") +
-        "</select>"
-      : '<div class="ctrl" onclick="showGuestPrompt(\'Bu günü düzenlemek için kayıt olun.\')">' + (row.lesson || "Ders Seç") + "</div>";
+    const lessonCell = '<select class="ctrl" onchange="upd(' + index + ',\'lesson\',this.value)">' +
+      '<option value="">Ders Seç</option>' +
+      sortedLessons.map(({ entry }) => '<option ' + (row.lesson === entry.name ? "selected" : "") + ">" + entry.name + "</option>").join("") +
+      "</select>";
 
-    const timeCell = editable
-      ? '<select class="ctrl" onchange="updChain(' + index + ',this.value)">' +
-        '<option value="-1">Saat Seç</option>' +
-        slots.map((slot, slotIndex) => '<option value="' + slotIndex + '" ' + (row.timeIdx == slotIndex ? "selected" : "") + ">" + slot + "</option>").join("") +
-        "</select>"
-      : '<div class="ctrl" onclick="showGuestPrompt(\'Bu günü düzenlemek için kayıt olun.\')">' + (row.timeIdx >= 0 ? slots[row.timeIdx] : "Saat Seç") + "</div>";
+    const timeCell = '<select class="ctrl" onchange="updChain(' + index + ',this.value)">' +
+      '<option value="-1">Saat Seç</option>' +
+      slots.map((slot, slotIndex) => '<option value="' + slotIndex + '" ' + (row.timeIdx == slotIndex ? "selected" : "") + ">" + slot + "</option>").join("") +
+      "</select>";
 
-    const deleteCell = editable
-      ? '<div onclick="delRow(' + index + ')" style="color:red;cursor:pointer;text-align:center;font-weight:bold;">x</div>'
-      : '<div onclick="showGuestPrompt(\'Bu günü düzenlemek için kayıt olun.\')" style="color:var(--text-muted);cursor:pointer;text-align:center;font-weight:bold;">x</div>';
+    const deleteCell = '<div onclick="delRow(' + index + ')" style="color:red;cursor:pointer;text-align:center;font-weight:bold;">x</div>';
 
     div.innerHTML = [
       '<div style="color:var(--color-accent);font-weight:bold;text-align:center">' + (index + 1) + "</div>",
@@ -1283,17 +1261,7 @@ function addRow(){
   const day = getSelectedDay();
   if(!day) return;
 
-  if(!isEditableDay(day)){
-    showGuestPrompt("Yalnızca bugünün programını düzenlemek için kayıt olun.");
-    return;
-  }
-
   const dayRows = ensureDaySchedule(day);
-  if(isGuest() && dayRows.length >= GUEST_SCHEDULE_LIMIT){
-    showGuestPrompt("Misafir kullanici olarak bugun icin en fazla 8 ders ekleyebilirsiniz. Tam kullanim icin kayit olun.");
-    return;
-  }
-
   dayRows.push({ class: "", lesson: "", color: appData.lastColor, timeIdx: -1 });
   saveAppData();
   renderSettingsUI();
@@ -1306,18 +1274,13 @@ function addRow(){
     const rect = lastRow.getBoundingClientRect();
     const offset = 90;
     if(rect.bottom > window.innerHeight - offset){
-      window.scrollBy({ top: 100, behavior: "smooth" });
+      document.body.scrollBy({ top: 100, behavior: "smooth" });
     }
   }, 100);
 }
 
 function delRow(index){
   const day = getSelectedDay();
-  if(!isEditableDay(day)){
-    showGuestPrompt("Yalnızca bugünün programını düzenlemek için kayıt olun.");
-    return;
-  }
-
   appData.schedule[day].splice(index, 1);
   saveAppData();
   renderSettingsUI();
@@ -1325,24 +1288,12 @@ function delRow(index){
 
 function upd(index, key, value){
   const day = getSelectedDay();
-  if(!isEditableDay(day)){
-    showGuestPrompt("Yalnızca bugünün programını düzenlemek için kayıt olun.");
-    renderSettingsUI();
-    return;
-  }
-
   appData.schedule[day][index][key] = value;
   saveAppData();
 }
 
 function updChain(index, value){
   const day = getSelectedDay();
-  if(!isEditableDay(day)){
-    showGuestPrompt("Yalnızca bugünün programını düzenlemek için kayıt olun.");
-    renderSettingsUI();
-    return;
-  }
-
   let start = parseInt(value, 10);
   if(start === -1) return;
 
@@ -1353,19 +1304,6 @@ function updChain(index, value){
 
   saveAppData();
   renderSettingsUI();
-}
-
-function updateGuestScheduleState(){
-  const addRowBtn = document.getElementById("addRowBtn");
-  const day = getSelectedDay();
-  if(!addRowBtn || !day) return;
-
-  const editable = isEditableDay(day);
-  const dayRows = appData.schedule[getTodayDayName()] || [];
-  const limitReached = isGuest() && editable && dayRows.length >= GUEST_SCHEDULE_LIMIT;
-
-  addRowBtn.style.opacity = (!editable || limitReached) ? ".55" : "1";
-  addRowBtn.textContent = limitReached ? "LIMIT DOLU" : "+ SATIR EKLE";
 }
 
 function hydrateControlsFromData(){
@@ -1723,6 +1661,21 @@ window.onload = async () => {
   });
 };
 
+function openRoleActionSheet(){
+  const sheet = document.getElementById("roleActionSheet");
+  if(sheet) sheet.style.display = "flex";
+}
+
+function closeRoleActionSheet(){
+  const sheet = document.getElementById("roleActionSheet");
+  if(sheet) sheet.style.display = "none";
+}
+
+function roleActionSheetConfirm(){
+  closeRoleActionSheet();
+  AppShell.resetRoleAndData();
+}
+
 // Kart başlığına tıklanınca: toggle open/close + gerekirse yukarı kaydır
 document.querySelectorAll(".card-head").forEach((head) => {
   head.addEventListener("click", function(){
@@ -1740,11 +1693,16 @@ document.querySelectorAll(".card-head").forEach((head) => {
 
     setTimeout(() => {
       const rect = card.getBoundingClientRect();
-      if(rect.bottom > window.innerHeight - 80){
-        window.scrollBy({
-          top: rect.bottom - window.innerHeight + 120,
-          behavior: "smooth"
-        });
+      const clearance = 62 + 16;
+      const bottomTarget = window.innerHeight - clearance;
+      if(rect.bottom > bottomTarget){
+        const scrollNeeded = rect.bottom - bottomTarget;
+        const newTop = rect.top - scrollNeeded;
+        if(newTop < 8){
+          document.body.scrollBy({ top: rect.top - 8, behavior: "smooth" });
+        }else{
+          document.body.scrollBy({ top: scrollNeeded, behavior: "smooth" });
+        }
       }
     }, 200);
   });

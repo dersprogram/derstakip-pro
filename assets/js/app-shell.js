@@ -86,9 +86,9 @@
   function customConfirm(message){
     return new Promise(function(resolve){
       var overlay = document.createElement('div');
-      overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);padding:20px;';
+      overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.68);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);padding:20px;';
       var box = document.createElement('div');
-      box.style.cssText = 'background:var(--color-panel-top,#0e121c);border:1px solid var(--border-normal,rgba(255,255,255,.14));border-radius:14px;padding:24px 20px 20px;max-width:320px;width:100%;box-shadow:0 20px 48px rgba(0,0,0,.6);';
+      box.style.cssText = 'background:var(--color-panel-top,#0e121c);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:24px 20px 20px;max-width:320px;width:100%;box-shadow:0 28px 64px rgba(0,0,0,.75),0 0 0 1px rgba(255,255,255,.04);';
       var msg = document.createElement('p');
       msg.style.cssText = 'margin:0 0 20px;color:var(--text-primary,#fff);font-size:.9rem;line-height:1.5;white-space:pre-line;';
       msg.textContent = message;
@@ -135,7 +135,7 @@
   // ─── Rol sıfırlama ───────────────────────────────────────────────────────
 
   function resetRoleAndData(){
-    customConfirm("Rolü sıfırlamak tüm verilerinizi (program, notlar, dersler) kalıcı olarak siler.\n\nDevam etmek istiyor musun?").then(function(confirmed){
+    customConfirm("Devam ederseniz mevcut ders programı, notlar ve diğer veriler temizlenir.\n\nRol seçim ekranına yönlendirileceksiniz.").then(function(confirmed){
       if(!confirmed) return;
 
       // Tema ve font tercihlerini koru, geri kalanı sil
@@ -250,8 +250,7 @@
   }
 
   function isGuestEditableDay(appData, dayName){
-    if(!isGuestUser(appData)) return true;
-    return String(dayName || "").trim() === getGuestSourceDayName();
+    return true;
   }
 
   function getScheduleRowsForDay(appData, dayName){
@@ -259,12 +258,7 @@
     const resolvedDay = String(dayName || "").trim();
     const dayIsActive = isActiveDay(appData, resolvedDay);
     if(!dayIsActive) return [];
-    if(!isGuestUser(appData) || isGuestEditableDay(appData, resolvedDay)){
-      return cloneRows(schedule[resolvedDay] || []);
-    }
-    const sourceDay = getGuestSourceDayName();
-    const sourceRows = schedule[sourceDay] || [];
-    return shuffledRows(sourceRows, resolvedDay);
+    return cloneRows(schedule[resolvedDay] || []);
   }
 
   // ─── Tema / font ─────────────────────────────────────────────────────────

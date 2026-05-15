@@ -1,6 +1,6 @@
 {
   "name": "Ders Takip Pro",
-  "short_name": "DersTakip",
+  "short_name": "Ders Takip Pro",
   "description": "Öğretmen ve öğrenci için ders takip uygulaması",
   "start_url": "/welcome.html",
   "scope": "/",

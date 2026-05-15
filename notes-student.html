@@ -9,7 +9,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Notlar</title>
+<title>Ders Takip Pro</title>
 <script type="module" src="assets/js/firebase.js?v=20260409-2"></script>
 <script src="assets/js/app-shell.js?v=20260409-2"></script>
 <script type="module" src="assets/js/auth.js?v=20260409-2"></script>
@@ -148,9 +148,7 @@ function getRequestedDay(){
 }
 
 function isRestrictedAccess(dayName){
-  if(!isGuest()) return false;
-  if(!dayName) return false;
-  return dayName !== getTodayDayName();
+  return false;
 }
 
 function showRestrictedPrompt(){

@@ -13,7 +13,8 @@ body{
   scrollbar-gutter: stable;
 }
 
-html{
+html,
+body{
   scroll-padding-bottom: calc(var(--nav-height) + 28px);
 }
 
@@ -101,6 +102,16 @@ html{
   font-size: var(--font-sm);
   font-weight: 600;
   color: var(--text-secondary);
+}
+
+.hiddenColorInput{
+  position: fixed;
+  top: -200vh;
+  left: -200vw;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .pop-color{
@@ -530,6 +541,201 @@ html{
   color: #000;
   box-shadow: 0 0 12px rgba(var(--color-accent-rgb), .45);
   transform: none;
-  
+}
+
+/* ===== GUEST ROLE CHIP ===== */
+
+.guestRoleChip{
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.guestRoleIcon{
+  font-size: .75rem !important;
+  opacity: .65;
+  line-height: 1;
+}
+
+/* ===== GUEST CLOUD CARD ===== */
+
+.guestCloudCard{
+  margin: 16px 6px 0;
+  padding: 16px 16px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(255,255,255,.03);
+}
+
+.guestCloudDesc{
+  font-size: .81rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  line-height: 1.55;
+  margin: 0 0 16px;
+  letter-spacing: .01em;
+}
+
+.guestGoogleBtn{
+  width: 100%;
+  padding: 13px;
+  background: var(--color-accent);
+  color: #000;
+  font-weight: 800;
+  font-size: .88rem;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  letter-spacing: .01em;
+  box-shadow: 0 0 18px rgba(var(--color-accent-rgb), .22);
+  transition: opacity .15s ease, box-shadow .15s ease;
+}
+
+.guestGoogleBtn:hover{
+  opacity: .88;
+  box-shadow: 0 0 24px rgba(var(--color-accent-rgb), .32);
+}
+
+.guestRegisterBtn{
+  width: 100%;
+  padding: 11px;
+  background: rgba(var(--color-accent-rgb), .07);
+  color: var(--color-accent);
+  font-weight: 700;
+  font-size: .84rem;
+  border: 1px solid rgba(var(--color-accent-rgb), .28);
+  border-radius: 12px;
+  cursor: pointer;
+  margin-top: 8px;
+  letter-spacing: .01em;
+  transition: background-color .15s ease;
+}
+
+.guestRegisterBtn:hover{
+  background: rgba(var(--color-accent-rgb), .13);
+}
+
+.guestLoginAction{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 14px;
+  padding-top: 13px;
+  border-top: 1px solid rgba(255,255,255,.07);
+}
+
+.guestLoginAction a{
+  font-size: .78rem;
+  color: rgba(var(--color-accent-rgb), .55);
+  text-decoration: none;
+  font-weight: 700;
+  transition: color .18s ease;
+}
+
+.guestLoginAction a:hover{
+  color: var(--color-accent);
+}
+
+/* ===== ROL ACTION SHEET ===== */
+
+.rasOverlay{
+  position: fixed;
+  inset: 0;
+  z-index: 9997;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0 10px max(18px, env(safe-area-inset-bottom));
+}
+
+.rasBackdrop{
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,.42);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+
+.rasCard{
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 420px;
+  background: var(--color-bg-card, #0e1420);
+  border: 1px solid rgba(255,255,255,.1);
+  border-top: 1px solid rgba(var(--color-accent-rgb), .2);
+  border-radius: 18px 18px 14px 14px;
+  padding: 6px 18px 16px;
+  box-shadow: 0 -2px 24px rgba(0,0,0,.35);
+  animation: rasSlideUp .2s cubic-bezier(.25,.8,.35,1);
+}
+
+@keyframes rasSlideUp{
+  from{ transform: translateY(16px); opacity: 0; }
+  to  { transform: translateY(0);    opacity: 1; }
+}
+
+.rasHandle{
+  width: 32px;
+  height: 3px;
+  background: rgba(255,255,255,.1);
+  border-radius: 2px;
+  margin: 0 auto 14px;
+}
+
+.rasTitle{
+  font-size: .68rem;
+  font-weight: 800;
+  letter-spacing: .09em;
+  color: rgba(var(--color-accent-rgb), .75);
+  text-transform: uppercase;
+  margin-bottom: 5px;
+}
+
+.rasDesc{
+  font-size: .83rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  opacity: .82;
+  margin-bottom: 16px;
+}
+
+.rasResetBtn{
+  width: 100%;
+  padding: 12px;
+  border-radius: 11px;
+  border: 1px solid rgba(var(--color-accent-rgb), .35);
+  background: rgba(var(--color-accent-rgb), .06);
+  color: var(--color-accent);
+  font-size: .86rem;
+  font-weight: 700;
+  cursor: pointer;
+  margin-bottom: 7px;
+  letter-spacing: .01em;
+  box-shadow: 0 0 10px rgba(var(--color-accent-rgb), .06);
+  transition: background-color .15s ease, box-shadow .15s ease;
+}
+
+.rasResetBtn:hover{
+  background: rgba(var(--color-accent-rgb), .12);
+  box-shadow: 0 0 14px rgba(var(--color-accent-rgb), .14);
+}
+
+.rasCancelBtn{
+  width: 100%;
+  padding: 11px;
+  border-radius: 11px;
+  border: 1px solid rgba(255,255,255,.08);
+  background: transparent;
+  color: rgba(255,255,255,.38);
+  font-size: .84rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color .15s ease, border-color .15s ease;
+}
+
+.rasCancelBtn:hover{
+  color: rgba(255,255,255,.6);
+  border-color: rgba(255,255,255,.16);
 }
 
