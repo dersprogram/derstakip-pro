@@ -17,7 +17,7 @@ async function ensureDb() {
     import('./firebase.js'),
   ]);
   _db  = dbMod.getDatabase(app);
-  _ops = { ref: dbMod.ref, get: dbMod.get, set: dbMod.set, update: dbMod.update };
+  _ops = { ref: dbMod.ref, get: dbMod.get, set: dbMod.set };
 }
 
 // ─── Uid yardımcısı ──────────────────────────────────────────────────────────
@@ -30,10 +30,9 @@ function getUid() {
 }
 
 // ─── Firebase'e yaz ──────────────────────────────────────────────────────────
-// Ana veri her zaman set() ile yazılır.
-// Notlar: local'de not varsa set() (tam yaz), yoksa update() (notes alanına dokunma).
+// fbNotes / fbNotesTs: local not yoksa Firebase'deki notları koru (sıfırlama).
 
-export async function pushNow(appData) {
+export async function pushNow(appData, fbNotes, fbNotesTs) {
   if (!navigator.onLine) return;
   const data = appData || window.AppShell?.loadAppData?.();
   if (!data) return;
@@ -42,53 +41,42 @@ export async function pushNow(appData) {
 
   try {
     await ensureDb();
-    const { ref, set, update } = _ops;
+    const { ref, set } = _ops;
 
     const rawNotes = JSON.parse(localStorage.getItem(NOTES_KEY) || '[]');
     let notesTs    = Number(localStorage.getItem(NOTES_TS_KEY) || 0);
-    if (notesTs === 0 && rawNotes.length > 0) {
-      notesTs = Date.now();
-      localStorage.setItem(NOTES_TS_KEY, String(notesTs));
-    }
 
-    const mainPayload = {
-      lessons:      data.lessons      || [],
-      weeklyGrid:   data.weeklyGrid   || {},
-      activeDays:   data.activeDays   || [0, 1, 2, 3, 4],
-      lastModified: data.lastModified || Date.now(),
-    };
-    if (data.plans) mainPayload.plans = data.plans;
-
+    let finalNotes, finalNotesTs;
     if (rawNotes.length > 0) {
-      // Local'de not var → set() ile tam yaz (notlar dahil)
-      mainPayload.notes         = rawNotes;
-      mainPayload.notesModified = notesTs;
-      await set(ref(_db, 'users/' + uid), mainPayload);
+      if (notesTs === 0) {
+        notesTs = Date.now();
+        localStorage.setItem(NOTES_TS_KEY, String(notesTs));
+      }
+      finalNotes   = rawNotes;
+      finalNotesTs = notesTs;
+    } else if (Array.isArray(fbNotes) && fbNotes.length > 0) {
+      // Local'de not yok — Firebase'deki notları koru
+      finalNotes   = fbNotes;
+      finalNotesTs = fbNotesTs || 0;
     } else {
-      // Local'de not yok → update() ile sadece ana alanları güncelle, Firebase notlarına dokunma
-      await update(ref(_db, 'users/' + uid), mainPayload);
+      finalNotes   = [];
+      finalNotesTs = 0;
     }
+
+    const payload = {
+      lessons:       data.lessons      || [],
+      weeklyGrid:    data.weeklyGrid   || {},
+      activeDays:    data.activeDays   || [0, 1, 2, 3, 4],
+      lastModified:  data.lastModified || Date.now(),
+      notes:         finalNotes,
+      notesModified: finalNotesTs,
+    };
+    if (data.plans) payload.plans = data.plans;
+
+    await set(ref(_db, 'users/' + uid), payload);
   } catch(e) {
     console.warn('[sync] push hatası:', e);
   }
-}
-
-// ─── Notları Firebase'e yaz ───────────────────────────────────────────────────
-
-async function pushNotesNow(uid) {
-  const rawNotes = JSON.parse(localStorage.getItem(NOTES_KEY) || '[]');
-  if (!rawNotes.length) return;
-  let notesTs = Number(localStorage.getItem(NOTES_TS_KEY) || 0);
-  if (!notesTs) {
-    notesTs = Date.now();
-    localStorage.setItem(NOTES_TS_KEY, String(notesTs));
-  }
-  await ensureDb();
-  const { ref, update } = _ops;
-  await update(ref(_db, 'users/' + uid), {
-    notes:         rawNotes,
-    notesModified: notesTs,
-  });
 }
 
 // ─── Firebase'den oku ────────────────────────────────────────────────────────
@@ -117,21 +105,24 @@ export async function syncNow() {
     const remote = await pullFrom(uid);
 
     if (!remote) {
-      const withTs = Object.assign({}, local, {
-        lastModified: local.lastModified || Date.now(),
-      });
-      await pushNow(withTs);
+      await pushNow(local);
       return;
     }
 
-    // ── Ana veri ──────────────────────────────────────────────────────────
     const localTs       = local.lastModified  || 0;
     const remoteTs      = remote.lastModified || 0;
     const localEmpty    = !Array.isArray(local.lessons) || local.lessons.length === 0;
     const remoteHasData = Array.isArray(remote.lessons) && remote.lessons.length > 0;
 
-    if (remoteTs > localTs || (localEmpty && remoteHasData)) {
-      // Firebase daha yeni → local'i güncelle
+    const localNotesTs  = Number(localStorage.getItem(NOTES_TS_KEY) || 0);
+    const remoteNotesTs = remote.notesModified || 0;
+
+    const remoteMainNewer  = remoteTs > localTs || (localEmpty && remoteHasData);
+    const remoteNotesNewer = remoteNotesTs > localNotesTs &&
+                             Array.isArray(remote.notes) && remote.notes.length > 0;
+
+    // ── Local'i güncelle (Firebase daha yeniyse) ─────────────────────────
+    if (remoteMainNewer) {
       local.lessons      = remote.lessons    ?? local.lessons;
       local.weeklyGrid   = remote.weeklyGrid ?? local.weeklyGrid;
       local.activeDays   = remote.activeDays ?? local.activeDays;
@@ -141,26 +132,22 @@ export async function syncNow() {
       window.dispatchEvent(new CustomEvent('appDataSynced', {
         detail: { source: 'firebase', lessons: local.lessons, weeklyGrid: local.weeklyGrid }
       }));
-      // Local'de not varsa Firebase'e gönder (pull senaryosunda notlar gitmez)
-      const localNotes = JSON.parse(localStorage.getItem(NOTES_KEY) || '[]');
-      if (localNotes.length > 0) {
-        await pushNotesNow(uid);
-      }
-    } else {
-      // Local daha yeni ya da aynı → Firebase'e gönder
-      // pushNow: notlu cihazda set(), notsuz cihazda update() — Firebase notlarını silmez
-      await pushNow(local);
     }
 
-    // ── Notlar ───────────────────────────────────────────────────────────
-    const localNotesTs  = Number(localStorage.getItem(NOTES_TS_KEY) || 0);
-    const remoteNotesTs = remote.notesModified || 0;
-    if (remoteNotesTs > localNotesTs && Array.isArray(remote.notes) && remote.notes.length > 0) {
+    if (remoteNotesNewer) {
       localStorage.setItem(NOTES_KEY, JSON.stringify(remote.notes));
       localStorage.setItem(NOTES_TS_KEY, String(remoteNotesTs));
       window.dispatchEvent(new CustomEvent('appDataSynced', {
         detail: { source: 'firebase', notes: remote.notes }
       }));
+    }
+
+    // ── Firebase'i güncelle (local daha yeniyse) ─────────────────────────
+    // Her iki taraftan daha yeni olan var mı?
+    if (!remoteMainNewer || !remoteNotesNewer) {
+      // pushNow'a Firebase notlarını yedek olarak ver:
+      // local'de not yoksa Firebase'deki notlar silinmez.
+      await pushNow(local, remote.notes, remote.notesModified);
     }
 
   } catch(e) {
