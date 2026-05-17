@@ -103,6 +103,8 @@ export async function syncNow() {
     const localEmpty    = !Array.isArray(local.lessons) || local.lessons.length === 0;
     const remoteHasData = Array.isArray(remote.lessons) && remote.lessons.length > 0;
 
+    let didPush = false;
+
     if (remoteTs > localTs || (localEmpty && remoteHasData)) {
       // Firebase daha yeni → local'i güncelle
       local.lessons      = remote.lessons    ?? local.lessons;
@@ -120,19 +122,26 @@ export async function syncNow() {
       }));
 
     } else {
-      // Local daha yeni ya da aynı → Firebase'e gönder
+      // Local daha yeni ya da aynı → Firebase'e gönder (notlar da dahil)
       await pushNow(local);
+      didPush = true;
     }
 
     // Notları bağımsız olarak senkronize et (ayrı timestamp)
     const localNotesTs  = Number(localStorage.getItem(NOTES_TS_KEY) || 0);
     const remoteNotesTs = remote.notesModified || 0;
-    if (remoteNotesTs > localNotesTs && Array.isArray(remote.notes)) {
+    const localNotes    = JSON.parse(localStorage.getItem(NOTES_KEY) || '[]');
+
+    if (remoteNotesTs > localNotesTs && Array.isArray(remote.notes) && remote.notes.length > 0) {
+      // Firebase notları daha yeni → local'i güncelle
       localStorage.setItem(NOTES_KEY, JSON.stringify(remote.notes));
       localStorage.setItem(NOTES_TS_KEY, String(remoteNotesTs));
       window.dispatchEvent(new CustomEvent('appDataSynced', {
         detail: { source: 'firebase', notes: remote.notes }
       }));
+    } else if (!didPush && localNotes.length > 0) {
+      // Ana veri pull edildi ama local'de not var, Firebase'de yok → notları gönder
+      await pushNow(local);
     }
 
   } catch(e) {
