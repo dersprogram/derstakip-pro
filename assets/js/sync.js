@@ -56,8 +56,9 @@ export async function pushNow(appData, fbNotes, fbNotesTs) {
       finalNotesTs = notesTs;
     } else if (Array.isArray(fbNotes) && fbNotes.length > 0) {
       // Local'de not yok — Firebase'deki notları koru
+      // fbNotesTs=0 ise gerçek bir timestamp ata (sonraki sync'te çekilebilsin)
       finalNotes   = fbNotes;
-      finalNotesTs = fbNotesTs || 0;
+      finalNotesTs = fbNotesTs || Date.now();
     } else {
       finalNotes   = [];
       finalNotesTs = 0;
@@ -116,10 +117,13 @@ export async function syncNow() {
 
     const localNotesTs  = Number(localStorage.getItem(NOTES_TS_KEY) || 0);
     const remoteNotesTs = remote.notesModified || 0;
+    const localNotesArr = JSON.parse(localStorage.getItem(NOTES_KEY) || '[]');
+    const localHasNotes = Array.isArray(localNotesArr) && localNotesArr.length > 0;
+    const remoteHasNotes = Array.isArray(remote.notes) && remote.notes.length > 0;
 
     const remoteMainNewer  = remoteTs > localTs || (localEmpty && remoteHasData);
-    const remoteNotesNewer = remoteNotesTs > localNotesTs &&
-                             Array.isArray(remote.notes) && remote.notes.length > 0;
+    // Timestamp farkına ek olarak: local'de hiç not yoksa Firebase notlarını çek
+    const remoteNotesNewer = remoteHasNotes && (remoteNotesTs > localNotesTs || !localHasNotes);
 
     // ── Local'i güncelle (Firebase daha yeniyse) ─────────────────────────
     if (remoteMainNewer) {
