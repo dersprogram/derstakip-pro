@@ -318,12 +318,9 @@ if(window.location.hostname === "127.0.0.1"){
 <input id="hiddenPicker" type="color" class="hiddenColorInput"/>
 <input id="cellColorPicker" type="color" class="hiddenColorInput"/>
 
-<div id="roleActionSheet" class="rasOverlay" style="display:none;" onclick="if(event.target===this||event.target.classList.contains('rasBackdrop'))closeRoleActionSheet()">
-  <div class="rasBackdrop"></div>
-  <div class="rasCard">
-    <div class="rasHandle"></div>
+<div id="roleActionSheet" class="appModalOverlay" style="display:none;" onclick="if(event.target===this)closeRoleActionSheet()">
+  <div class="appModal">
     <div class="rasTitle">Rol Ayarları</div>
-    <div class="rasDesc">Başka bir rol seçmek için mevcut rol bilgisi temizlenir ve giriş ekranına yönlendirilirsiniz.</div>
     <button class="rasResetBtn" type="button" onclick="roleActionSheetConfirm()">Rol Seçimini Sıfırla</button>
     <button class="rasCancelBtn" type="button" onclick="closeRoleActionSheet()">Vazgeç</button>
   </div>
@@ -1663,12 +1660,13 @@ window.onload = async () => {
 
 function openRoleActionSheet(){
   const sheet = document.getElementById("roleActionSheet");
-  if(sheet) sheet.style.display = "flex";
+  if(sheet){ sheet.style.display = "flex"; document.body.classList.add("modal-open"); }
 }
 
 function closeRoleActionSheet(){
   const sheet = document.getElementById("roleActionSheet");
   if(sheet) sheet.style.display = "none";
+  document.body.classList.remove("modal-open");
 }
 
 function roleActionSheetConfirm(){

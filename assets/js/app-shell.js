@@ -426,8 +426,8 @@
 
   function hideRegisterPrompt(){
     const modal = document.getElementById("registerPrompt");
-    if(modal) modal.classList.add("hidden");
-    document.body.classList.remove("registerPrompt-open");
+    if(modal) modal.style.display = "none";
+    document.body.classList.remove("modal-open");
   }
 
   function triggerRegisterFlow(){
@@ -444,10 +444,10 @@
     if(modal) return modal;
     modal = document.createElement("div");
     modal.id = "registerPrompt";
-    modal.className = "registerPrompt hidden";
+    modal.className = "appModalOverlay";
+    modal.style.display = "none";
     modal.innerHTML = [
-      '<div class="registerPrompt-backdrop" data-register-close="true"></div>',
-      '<div class="registerPrompt-card" role="dialog" aria-modal="true" aria-labelledby="registerPromptTitle">',
+      '<div class="appModal registerPrompt-card" role="dialog" aria-modal="true" aria-labelledby="registerPromptTitle">',
       '<div class="registerPrompt-kicker">SINIRLI KULLANIM</div>',
       '<div class="registerPrompt-title" id="registerPromptTitle">Bu özelliğin tamamını kullanmak için kayıt olun.</div>',
       '<div class="registerPrompt-text" id="registerPromptText" style="display:none;"></div>',
@@ -459,7 +459,7 @@
     ].join("");
     document.body.appendChild(modal);
     modal.addEventListener("click", function(event){
-      if(event.target.closest("[data-register-close='true']") || event.target.id === "registerPromptCancel"){
+      if(event.target === modal || event.target.id === "registerPromptCancel"){
         hideRegisterPrompt();
       }
       if(event.target.id === "registerPromptGo"){
@@ -474,8 +474,8 @@
     const modal = ensureRegisterPrompt();
     const text = document.getElementById("registerPromptText");
     if(text){ text.textContent = ""; text.style.display = "none"; }
-    modal.classList.remove("hidden");
-    document.body.classList.add("registerPrompt-open");
+    modal.style.display = "flex";
+    document.body.classList.add("modal-open");
   }
 
   // ─── Geri tuşu yönetimi ──────────────────────────────────────────────────

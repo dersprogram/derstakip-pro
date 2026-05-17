@@ -283,8 +283,8 @@ if(window.location.hostname === "127.0.0.1"){
   </div>
 </div>
 
-<div id="cellModalOverlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.78); z-index:9998; align-items:center; justify-content:center;">
-  <div style="background:var(--color-bg-card); border:1px solid var(--color-accent); border-radius:16px; padding:20px; width:88%; max-width:360px; max-height:82vh; overflow-y:auto;">
+<div id="cellModalOverlay" class="appModalOverlay" style="display:none;" onclick="if(event.target===this)closeCellModal()">
+  <div class="appModal">
     <div id="cellModalTitle" style="font-size:.85rem; font-weight:900; color:var(--color-accent); margin-bottom:14px;"></div>
     <div style="margin-bottom:12px;">
       <div style="font-size:var(--font-xs); color:var(--text-muted); margin-bottom:5px;">DERS</div>
@@ -320,20 +320,17 @@ if(window.location.hostname === "127.0.0.1"){
 <input id="hiddenPicker" type="color" class="hiddenColorInput"/>
 <input id="cellColorPicker" type="color" class="hiddenColorInput"/>
 
-<div id="roleActionSheet" class="rasOverlay" style="display:none;" onclick="if(event.target===this||event.target.classList.contains('rasBackdrop'))closeRoleActionSheet()">
-  <div class="rasBackdrop"></div>
-  <div class="rasCard">
-    <div class="rasHandle"></div>
+<div id="roleActionSheet" class="appModalOverlay" style="display:none;" onclick="if(event.target===this)closeRoleActionSheet()">
+  <div class="appModal">
     <div class="rasTitle">Rol Ayarları</div>
-    <div class="rasDesc">Başka bir rol seçmek için mevcut rol bilgisi temizlenir ve giriş ekranına yönlendirilirsiniz.</div>
     <button class="rasResetBtn" type="button" onclick="roleActionSheetConfirm()">Rol Seçimini Sıfırla</button>
     <button class="rasCancelBtn" type="button" onclick="closeRoleActionSheet()">Vazgeç</button>
   </div>
 </div>
 
 <!-- Yıllık Plan Modal -->
-<div id="planModalOverlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:9999; align-items:center; justify-content:center;">
-  <div style="background:var(--color-bg-card); border:1px solid var(--color-accent); border-radius:16px; padding:20px; width:88%; max-width:360px;">
+<div id="planModalOverlay" class="appModalOverlay" style="display:none;" onclick="if(event.target===this)closePlanModal()">
+  <div class="appModal">
     <div style="font-size:.85rem; font-weight:900; color:var(--color-accent); margin-bottom:14px;" id="planModalTitle">Plan Seç</div>
 
     <div style="margin-bottom:12px;">
@@ -880,12 +877,14 @@ function openPlanModal(lessonIndex, event){
 
   const overlay = document.getElementById("planModalOverlay");
   overlay.style.display = "flex";
+  document.body.classList.add("modal-open");
 
   if(classSelect.value) loadPlanList();
 }
 
 function closePlanModal(){
   document.getElementById("planModalOverlay").style.display = "none";
+  _syncModalOpen();
   planModalLessonIndex = null;
   planSelectedPath = null;
 }
@@ -1059,6 +1058,7 @@ function openCellModal(day, slot){
   document.getElementById("cellDeleteBtn").style.display = cell ? "inline-block" : "none";
   document.getElementById("cellAddLessonWrap").style.display = "none";
   document.getElementById("cellModalOverlay").style.display = "flex";
+  document.body.classList.add("modal-open");
 }
 
 function buildCellLessonSelect(current){
@@ -1123,10 +1123,12 @@ function openCellPlanModal(){
   else infoEl.style.display = "none";
   document.getElementById("planSaveBtn").disabled = !cellModalPlanPath;
   document.getElementById("planModalOverlay").style.display = "flex";
+  document.body.classList.add("modal-open");
 }
 
 function closeCellModal(){
   document.getElementById("cellModalOverlay").style.display = "none";
+  _syncModalOpen();
   cellModalDay = null;
   cellModalSlot = null;
 }
@@ -1760,14 +1762,21 @@ window.onload = async () => {
   });
 };
 
+function _syncModalOpen(){
+  const ids = ["cellModalOverlay","planModalOverlay","roleActionSheet"];
+  const any = ids.some(id => { const el = document.getElementById(id); return el && el.style.display === "flex"; });
+  document.body.classList.toggle("modal-open", any);
+}
+
 function openRoleActionSheet(){
   const sheet = document.getElementById("roleActionSheet");
-  if(sheet) sheet.style.display = "flex";
+  if(sheet){ sheet.style.display = "flex"; document.body.classList.add("modal-open"); }
 }
 
 function closeRoleActionSheet(){
   const sheet = document.getElementById("roleActionSheet");
   if(sheet) sheet.style.display = "none";
+  _syncModalOpen();
 }
 
 function roleActionSheetConfirm(){
