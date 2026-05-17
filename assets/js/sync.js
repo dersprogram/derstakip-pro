@@ -103,44 +103,38 @@ export async function syncNow() {
     const localEmpty    = !Array.isArray(local.lessons) || local.lessons.length === 0;
     const remoteHasData = Array.isArray(remote.lessons) && remote.lessons.length > 0;
 
-    let didPush = false;
+    const localNotesTs  = Number(localStorage.getItem(NOTES_TS_KEY) || 0);
+    const remoteNotesTs = remote.notesModified || 0;
 
-    if (remoteTs > localTs || (localEmpty && remoteHasData)) {
-      // Firebase daha yeni → local'i güncelle
+    const pullMain  = remoteTs > localTs || (localEmpty && remoteHasData);
+    const pullNotes = remoteNotesTs > localNotesTs &&
+                      Array.isArray(remote.notes) && remote.notes.length > 0;
+
+    // Firebase'den daha yeni veriyi local'e çek
+    if (pullMain) {
       local.lessons      = remote.lessons    ?? local.lessons;
       local.weeklyGrid   = remote.weeklyGrid ?? local.weeklyGrid;
       local.activeDays   = remote.activeDays ?? local.activeDays;
       if (remote.plans)  local.plans = remote.plans;
       local.lastModified = remoteTs;
-
-      // saveAppData'yı çağırmak yerine doğrudan yaz — push döngüsünü önler
       localStorage.setItem(window.AppShell.SETTINGS_KEY, JSON.stringify(local));
-
-      // Sayfayı bilgilendir; sayfalar kendi içinde dinleyip UI'ı yenileyebilir
       window.dispatchEvent(new CustomEvent('appDataSynced', {
         detail: { source: 'firebase', lessons: local.lessons, weeklyGrid: local.weeklyGrid }
       }));
-
-    } else {
-      // Local daha yeni ya da aynı → Firebase'e gönder (notlar da dahil)
-      await pushNow(local);
-      didPush = true;
     }
 
-    // Notları bağımsız olarak senkronize et (ayrı timestamp)
-    const localNotesTs  = Number(localStorage.getItem(NOTES_TS_KEY) || 0);
-    const remoteNotesTs = remote.notesModified || 0;
-    const localNotes    = JSON.parse(localStorage.getItem(NOTES_KEY) || '[]');
-
-    if (remoteNotesTs > localNotesTs && Array.isArray(remote.notes) && remote.notes.length > 0) {
-      // Firebase notları daha yeni → local'i güncelle
+    if (pullNotes) {
       localStorage.setItem(NOTES_KEY, JSON.stringify(remote.notes));
       localStorage.setItem(NOTES_TS_KEY, String(remoteNotesTs));
       window.dispatchEvent(new CustomEvent('appDataSynced', {
         detail: { source: 'firebase', notes: remote.notes }
       }));
-    } else if (!didPush && localNotes.length > 0) {
-      // Ana veri pull edildi ama local'de not var, Firebase'de yok → notları gönder
+    }
+
+    // Local'de Firebase'den daha yeni bir şey varsa Firebase'e gönder.
+    // pushNow localStorage'dan notları okur — yukarıda pullNotes güncellemiş olabilir,
+    // bu sayede her zaman "kazanan" notlar Firebase'e gider.
+    if (!pullMain || !pullNotes) {
       await pushNow(local);
     }
 
