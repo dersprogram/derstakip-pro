@@ -478,6 +478,13 @@ function saveAppData(){
   AppShell.syncAuthState();
 }
 
+function saveAuthIdentityOnly(){
+  const stored = AppShell.loadAppData() || {};
+  stored.settings = Object.assign(stored.settings || {}, appData.settings);
+  localStorage.setItem('ayarlar', JSON.stringify(stored));
+  AppShell.syncAuthState();
+}
+
 function syncAppData(nextData){
   const resolved = nextData || {};
   Object.keys(appData).forEach((key) => {
@@ -1478,7 +1485,8 @@ async function submitRegister(){
     });
 
     syncAppData(nextData);
-    saveAppData();
+    saveAuthIdentityOnly();
+    window.AppSync?.syncNow?.();
     closeUserPanels();
     setRegisterFormVisible(false);
     renderDays();
@@ -1556,7 +1564,8 @@ async function submitLogin(){
     });
 
     syncAppData(nextData);
-    saveAppData();
+    saveAuthIdentityOnly();
+    window.AppSync?.syncNow?.();
     closeUserPanels();
     setLoginFormVisible(false);
     renderDays();
@@ -1759,7 +1768,8 @@ window.onload = async () => {
     });
 
     syncAppData(nextData);
-    saveAppData();
+    saveAuthIdentityOnly();
+    window.AppSync?.syncNow?.();
     renderDays();
     syncUserProfile();
     renderUserCard();
@@ -1819,6 +1829,11 @@ document.querySelectorAll(".card-head").forEach((head) => {
       }
     }, 200);
   });
+});
+
+window.addEventListener('appDataSynced', function(e) {
+  const fresh = AppShell.loadAppData();
+  if(fresh){ syncAppData(fresh); renderDays(); renderSettingsUI(); }
 });
 
 window.addEventListener("load", () => {
