@@ -1,8 +1,11 @@
 // sync.js — Firebase Realtime Database ile local-first senkronizasyon
-// Senkronize edilenler: lessons, weeklyGrid, activeDays
+// Senkronize edilenler: lessons, weeklyGrid, activeDays, notes
 // Misafir kullanıcılar için senkronizasyon yapılmaz.
 
 const DB_SDK = 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js';
+
+const NOTES_KEY    = 'app_notes';
+const NOTES_TS_KEY = 'app_notes_ts';
 
 let _db   = null;
 let _ops  = null;
@@ -38,11 +41,20 @@ export async function pushNow(appData) {
   try {
     await ensureDb();
     const { ref, set } = _ops;
+    const rawNotes = JSON.parse(localStorage.getItem(NOTES_KEY) || '[]');
+    let notesTs    = Number(localStorage.getItem(NOTES_TS_KEY) || 0);
+    if (notesTs === 0 && rawNotes.length > 0) {
+      // Eski notlar timestamp olmadan kaydedilmiş — şimdi ata
+      notesTs = Date.now();
+      localStorage.setItem(NOTES_TS_KEY, String(notesTs));
+    }
     const payload = {
-      lessons:      data.lessons      || [],
-      weeklyGrid:   data.weeklyGrid   || {},
-      activeDays:   data.activeDays   || [0, 1, 2, 3, 4],
-      lastModified: data.lastModified || Date.now(),
+      lessons:       data.lessons      || [],
+      weeklyGrid:    data.weeklyGrid   || {},
+      activeDays:    data.activeDays   || [0, 1, 2, 3, 4],
+      lastModified:  data.lastModified || Date.now(),
+      notes:         rawNotes,
+      notesModified: notesTs,
     };
     if (data.plans) payload.plans = data.plans;
     await set(ref(_db, 'users/' + uid), payload);
@@ -86,10 +98,12 @@ export async function syncNow() {
       return;
     }
 
-    const localTs  = local.lastModified  || 0;
-    const remoteTs = remote.lastModified || 0;
+    const localTs       = local.lastModified  || 0;
+    const remoteTs      = remote.lastModified || 0;
+    const localEmpty    = !Array.isArray(local.lessons) || local.lessons.length === 0;
+    const remoteHasData = Array.isArray(remote.lessons) && remote.lessons.length > 0;
 
-    if (remoteTs > localTs) {
+    if (remoteTs > localTs || (localEmpty && remoteHasData)) {
       // Firebase daha yeni → local'i güncelle
       local.lessons      = remote.lessons    ?? local.lessons;
       local.weeklyGrid   = remote.weeklyGrid ?? local.weeklyGrid;
@@ -108,6 +122,17 @@ export async function syncNow() {
     } else {
       // Local daha yeni ya da aynı → Firebase'e gönder
       await pushNow(local);
+    }
+
+    // Notları bağımsız olarak senkronize et (ayrı timestamp)
+    const localNotesTs  = Number(localStorage.getItem(NOTES_TS_KEY) || 0);
+    const remoteNotesTs = remote.notesModified || 0;
+    if (remoteNotesTs > localNotesTs && Array.isArray(remote.notes)) {
+      localStorage.setItem(NOTES_KEY, JSON.stringify(remote.notes));
+      localStorage.setItem(NOTES_TS_KEY, String(remoteNotesTs));
+      window.dispatchEvent(new CustomEvent('appDataSynced', {
+        detail: { source: 'firebase', notes: remote.notes }
+      }));
     }
 
   } catch(e) {

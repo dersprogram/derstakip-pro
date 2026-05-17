@@ -13,6 +13,7 @@
 <script type="module" src="assets/js/firebase.js?v=20260409-2"></script>
 <script src="assets/js/app-shell.js?v=20260409-2"></script>
 <script type="module" src="assets/js/auth.js?v=20260409-2"></script>
+<script type="module" src="assets/js/sync.js?v=20260409-2"></script>
 <link rel="stylesheet" href="assets/css/tokens.css?v=20260409-2">
 <link rel="stylesheet" href="assets/css/base.css?v=20260409-2">
 <link rel="stylesheet" href="assets/css/components.css?v=20260409-2">
@@ -179,10 +180,12 @@ function data(){
 function saveData(dataset){
   try{
     localStorage.setItem(KEY, JSON.stringify(dataset));
+    localStorage.setItem('app_notes_ts', String(Date.now()));
   }catch(error){
     console.warn("NOTE STORAGE FAIL", error);
   }
   editId = null;
+  window.AppSync?.pushNow?.();
 }
 
 function showScreen(name){
@@ -864,6 +867,10 @@ render();
 if(mode === "list"){
   renderAll();
 }
+
+window.addEventListener('appDataSynced', function(e) {
+  if (e.detail?.notes) { render(); renderAll(); }
+});
 
 applyAccessState();
 

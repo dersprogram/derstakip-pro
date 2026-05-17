@@ -552,7 +552,7 @@
     injectPWAMeta();
 
     // sync.js'i dinamik olarak yükle (ES module, fire-and-forget)
-    import('./sync.js').catch(function(){});
+    import('/assets/js/sync.js').catch(function(){});
   }
 
   // ─── Public API ──────────────────────────────────────────────────────────

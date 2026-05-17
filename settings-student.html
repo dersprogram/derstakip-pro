@@ -1494,13 +1494,18 @@ window.loginWithGoogle = async function(){
       });
 
       syncAppData(nextData);
-      saveAppData();
+      // Sadece kimlik bilgisini kaydet; lastModified değişmesin ve Firebase'e boş veri gitmesin
+      const _prior = AppShell.loadAppData() || {};
+      _prior.settings = Object.assign(_prior.settings || {}, appData.settings);
+      localStorage.setItem('ayarlar', JSON.stringify(_prior));
+      AppShell.syncAuthState();
       closeUserPanels();
       setLoginFormVisible(false);
       renderDays();
       syncUserProfile();
       renderUserCard();
       renderSettingsUI();
+      window.AppSync?.syncNow?.();
     }
     // Popup engellendiyse auth.js redirect fallback başlatabilir.
   }catch(error){
