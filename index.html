@@ -2,7 +2,24 @@
 <html>
 <head>
 <meta charset="utf-8"/>
-<meta http-equiv="refresh" content="0; url=welcome.html"/>
+<script>
+(function(){
+  try{
+    const raw = localStorage.getItem("ayarlar");
+    const data = raw ? JSON.parse(raw) : null;
+    const role = data?.settings?.role;
+    if(role === "teacher"){
+      window.location.replace("index-teacher.html");
+      return;
+    }
+    if(role === "student"){
+      window.location.replace("index-student.html");
+      return;
+    }
+  }catch(e){}
+  window.location.replace("welcome.html");
+})();
+</script>
 </head>
 <body></body>
 </html>

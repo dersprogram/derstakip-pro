@@ -169,10 +169,41 @@
     appData.lastModified = Date.now();
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(appData));
     // Eğer online ise sync.js yüklüyse Firebase'e gönder (fire-and-forget)
-    if(navigator.onLine && window.AppSync){
-      window.AppSync.pushNow(appData).catch(function(){});
+    if(navigator.onLine){
+      pushSyncNow(appData).catch(function(){});
     }
     return appData;
+  }
+
+  var syncModulePromise = null;
+
+  function loadSyncModule(){
+    if(window.AppSync) return Promise.resolve(window.AppSync);
+    if(!syncModulePromise){
+      syncModulePromise = import('./sync.js').then(function(module){
+        return window.AppSync || module;
+      }).catch(function(error){
+        syncModulePromise = null;
+        throw error;
+      });
+    }
+    return syncModulePromise;
+  }
+
+  function pushSyncNow(appData){
+    if(!navigator.onLine) return Promise.resolve();
+    if(window.AppSync?.pushNow) return window.AppSync.pushNow(appData);
+    return loadSyncModule().then(function(sync){
+      if(sync?.pushNow) return sync.pushNow(appData);
+    });
+  }
+
+  function syncNow(){
+    if(!navigator.onLine) return Promise.resolve();
+    if(window.AppSync?.syncNow) return window.AppSync.syncNow();
+    return loadSyncModule().then(function(sync){
+      if(sync?.syncNow) return sync.syncNow();
+    });
   }
 
   function isGuestUser(appData){
@@ -552,7 +583,7 @@
     injectPWAMeta();
 
     // sync.js'i dinamik olarak yükle (ES module, fire-and-forget)
-    import('/assets/js/sync.js').catch(function(){});
+    syncNow().catch(function(){});
   }
 
   // ─── Public API ──────────────────────────────────────────────────────────
@@ -567,6 +598,9 @@
     getStoredFontSize,
     loadAppData,
     saveAppData,
+    loadSyncModule,
+    syncNow,
+    pushSyncNow,
     isGuestUser,
     syncAuthState,
     getTodayDayIndex,

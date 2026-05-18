@@ -7,6 +7,17 @@
 <meta name="theme-color" content="#050912" media="(prefers-color-scheme: dark)"/>
 <meta name="theme-color" content="#f4f6f9" media="(prefers-color-scheme: light)"/>
 <title>Ders Takip Pro</title>
+<script>
+(function(){
+  try{
+    const raw = localStorage.getItem("ayarlar");
+    const data = raw ? JSON.parse(raw) : null;
+    const role = data?.settings?.role;
+    if(role === "teacher"){ window.location.replace("index-teacher.html"); }
+    else if(role === "student"){ window.location.replace("index-student.html"); }
+  }catch(e){}
+})();
+</script>
 <link rel="icon" href="icons/icon-192.png"/>
 <link rel="stylesheet" href="assets/css/tokens.css">
 <link rel="stylesheet" href="assets/css/base.css">

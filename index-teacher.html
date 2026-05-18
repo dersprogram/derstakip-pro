@@ -453,6 +453,12 @@
     if(!lesson || lesson === "-" || !dayName) return;
     openLessonNoteForm(dayName, buildLessonKey(lesson));
   });
+
+  window.addEventListener("appDataSynced", function(event){
+    if(event.detail?.notes || event.detail?.weeklyGrid){
+      setDayByIndex(currentIndex, { scroll: false });
+    }
+  });
 })();
 </script>
 </body>

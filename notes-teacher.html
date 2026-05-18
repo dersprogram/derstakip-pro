@@ -181,11 +181,14 @@ function saveData(dataset){
   try{
     localStorage.setItem(KEY, JSON.stringify(dataset));
     localStorage.setItem('app_notes_ts', String(Date.now()));
+    localStorage.setItem('app_notes_dirty', '1');
+    const uid = AppShell.loadAppData()?.settings?.firebaseUid || "";
+    if(uid) localStorage.setItem('app_notes_uid', uid);
   }catch(error){
     console.warn("NOTE STORAGE FAIL", error);
   }
   editId = null;
-  window.AppSync?.pushNow?.();
+  AppShell.pushSyncNow?.();
 }
 
 function showScreen(name){
@@ -878,6 +881,30 @@ if(accessLocked && mode !== "list"){
   showRestrictedPrompt();
 }
 
+function revealOpenNoteCard(card){
+  setTimeout(() => {
+    const nav = document.querySelector(".nav");
+    const navHeight = nav ? nav.offsetHeight : 80;
+    const visibleHeight = window.innerHeight - navHeight;
+    const rect = card.getBoundingClientRect();
+
+    let scrollAmount;
+    if(rect.height >= visibleHeight - 32){
+      // Kart görünür alandan büyükse üst kenarı üste hizala
+      scrollAmount = rect.top - 16;
+    } else {
+      // Kartı görünür alanın ortasına taşı
+      const cardCenter = rect.top + rect.height / 2;
+      const viewCenter = visibleHeight / 2;
+      scrollAmount = cardCenter - viewCenter;
+    }
+
+    if(scrollAmount > 4){
+      document.body.scrollBy({ top: scrollAmount, behavior: "smooth" });
+    }
+  }, 120);
+}
+
 document.addEventListener("click", function(event){
   const head = event.target.closest(".card-head");
   if(!head) return;
@@ -902,15 +929,8 @@ document.addEventListener("click", function(event){
 
   if(card.classList.contains("open")){
     setTimeout(() => {
-      const nav = document.querySelector(".nav");
-      const navHeight = nav ? nav.offsetHeight : 80;
-      const rect = card.getBoundingClientRect();
-      const bottomSpace = window.innerHeight - rect.bottom;
-      if(bottomSpace < navHeight + 10){
-        const scrollAmount = (navHeight + 20) - bottomSpace;
-        window.scrollBy({ top: scrollAmount, behavior: "smooth" });
-      }
-    }, 200);
+      revealOpenNoteCard(card);
+    }, 340);
   }
 });
 </script>

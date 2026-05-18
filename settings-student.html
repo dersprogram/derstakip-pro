@@ -1382,7 +1382,7 @@ async function submitRegister(){
 
     syncAppData(nextData);
     saveAuthIdentityOnly();
-    window.AppSync?.syncNow?.();
+    await AppShell.syncNow?.();
     closeUserPanels();
     setRegisterFormVisible(false);
     renderDays();
@@ -1461,7 +1461,7 @@ async function submitLogin(){
 
     syncAppData(nextData);
     saveAuthIdentityOnly();
-    window.AppSync?.syncNow?.();
+    await AppShell.syncNow?.();
     closeUserPanels();
     setLoginFormVisible(false);
     renderDays();
@@ -1514,7 +1514,7 @@ window.loginWithGoogle = async function(){
       syncUserProfile();
       renderUserCard();
       renderSettingsUI();
-      window.AppSync?.syncNow?.();
+      await AppShell.syncNow?.();
     }
     // Popup engellendiyse auth.js redirect fallback başlatabilir.
   }catch(error){
@@ -1654,7 +1654,7 @@ window.onload = async () => {
   // Kullanıcı geldiği anda UI'yi anında registered moda al.
   const { onAuthStateChanged } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");
   const { auth } = await import("./assets/js/firebase.js");
-  onAuthStateChanged(auth, (user) => {
+  onAuthStateChanged(auth, async (user) => {
     if(!user) return;
 
     const nextData = AppAuth.applyAuthenticatedUser(appData, user, {
@@ -1665,7 +1665,7 @@ window.onload = async () => {
 
     syncAppData(nextData);
     saveAuthIdentityOnly();
-    window.AppSync?.syncNow?.();
+    await AppShell.syncNow?.();
     renderDays();
     syncUserProfile();
     renderUserCard();

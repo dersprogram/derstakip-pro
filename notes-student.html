@@ -178,11 +178,14 @@ function saveData(dataset){
   try{
     localStorage.setItem(KEY, JSON.stringify(dataset));
     localStorage.setItem('app_notes_ts', String(Date.now()));
+    localStorage.setItem('app_notes_dirty', '1');
+    const uid = AppShell.loadAppData()?.settings?.firebaseUid || "";
+    if(uid) localStorage.setItem('app_notes_uid', uid);
   }catch(error){
     console.warn("NOTE STORAGE FAIL", error);
   }
   editId = null;
-  window.AppSync?.pushNow?.();
+  AppShell.pushSyncNow?.();
 }
 
 function showScreen(name){
