@@ -12,6 +12,7 @@ import {
   reauthenticateWithCredential,
   reauthenticateWithPopup,
   setPersistence,
+  signInWithCredential,
   signInWithEmailAndPassword,
   signInWithPopup,
   signInWithRedirect,
@@ -307,10 +308,41 @@ import {
     if(hasPlaceholderConfig()) throw new Error("Firebase ayarları eksik.");
     await ensureAuthConfigured();
     suspendGuard();
-    // Android WebView'da popup çalışmaz — redirect kullan, sayfa Google'a yönlenir
+    // Android: native Google Sign-In bridge (WebView OAuth Google tarafından engelleniyor)
     if(IS_ANDROID_APP){
-      await signInWithRedirect(auth, googleProvider);
-      return null; // sayfa yönlenecek, buraya ulaşılmaz
+      return new Promise((resolve, reject) => {
+        window.AndroidGoogleAuthCallback = async function(idToken, email, displayName){
+          window.AndroidGoogleAuthCallback = null;
+          window.AndroidGoogleAuthError = null;
+          try{
+            const credential = GoogleAuthProvider.credential(idToken);
+            const result = await signInWithCredential(auth, credential);
+            resumeGuard();
+            currentFirebaseUser = result.user;
+            resolve(result.user);
+          }catch(err){
+            resumeGuard();
+            if(!err.userMessage) err.userMessage = getFirebaseErrorMessage(err);
+            reject(err);
+          }
+        };
+        window.AndroidGoogleAuthError = function(msg){
+          window.AndroidGoogleAuthCallback = null;
+          window.AndroidGoogleAuthError = null;
+          resumeGuard();
+          const err = new Error(msg || "Google girişi başarısız oldu.");
+          err.userMessage = err.message;
+          reject(err);
+        };
+        if(window.AndroidGoogleAuth && window.AndroidGoogleAuth.startSignIn){
+          window.AndroidGoogleAuth.startSignIn();
+        }else{
+          resumeGuard();
+          const err = new Error("Google Sign-In bu cihazda kullanılamıyor.");
+          err.userMessage = err.message;
+          reject(err);
+        }
+      });
     }
     if(googleLoginPromise) return googleLoginPromise;
     googleLoginPromise = (async () => {
