@@ -449,7 +449,6 @@ import {
   });
 
   window.AppAuth = AppAuth;
-  window.loginWithGoogle = loginWithGoogle;
 
   window.addEventListener("storage", e => { if(e.key === STORAGE_KEY) syncFromStorage(); });
 })();

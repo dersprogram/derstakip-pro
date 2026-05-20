@@ -50,7 +50,7 @@ body{
   scrollbar-width: none;
   -ms-overflow-style: none;
   -webkit-overflow-scrolling: touch;
-  padding-bottom: calc(var(--nav-height) + 42px);
+  padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom) + 42px);
   font-family: var(--font-family-base);
   color: var(--text-primary);
   background:

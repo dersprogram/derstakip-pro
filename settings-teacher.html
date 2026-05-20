@@ -5,7 +5,7 @@
 <meta name="color-scheme" content="dark light"/>
 <meta name="theme-color" content="#050912" media="(prefers-color-scheme: dark)"/>
 <meta name="theme-color" content="#f4f6f9" media="(prefers-color-scheme: light)"/>
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover"/>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
@@ -1235,7 +1235,8 @@ function addItem(type, inputId){
       const last = document.getElementById("lessonList")?.lastElementChild;
       if(!last) return;
       const rect = last.getBoundingClientRect();
-      const navClearance = 62 + 14 + 16;
+      const navEl3 = document.querySelector('.nav');
+      const navClearance = navEl3 ? (window.innerHeight - navEl3.getBoundingClientRect().top + 16) : 92;
       const overshoot = rect.bottom - (window.innerHeight - navClearance);
       if(overshoot > 0) document.body.scrollBy({ top: overshoot, behavior: "smooth" });
     }));
@@ -1380,7 +1381,8 @@ function addRow(){
     if(!lastRow) return;
 
     const rect = lastRow.getBoundingClientRect();
-    const offset = 90;
+    const navEl2 = document.querySelector('.nav');
+    const offset = navEl2 ? (window.innerHeight - navEl2.getBoundingClientRect().top + 16) : 90;
     if(rect.bottom > window.innerHeight - offset){
       document.body.scrollBy({ top: 100, behavior: "smooth" });
     }
@@ -1816,7 +1818,8 @@ document.querySelectorAll(".card-head").forEach((head) => {
 
     setTimeout(() => {
       const rect = card.getBoundingClientRect();
-      const clearance = 62 + 16;
+      const navEl = document.querySelector('.nav');
+      const clearance = navEl ? (window.innerHeight - navEl.getBoundingClientRect().top + 16) : 78;
       const bottomTarget = window.innerHeight - clearance;
       if(rect.bottom > bottomTarget){
         const scrollNeeded = rect.bottom - bottomTarget;
