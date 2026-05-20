@@ -17,9 +17,9 @@ html[data-theme="light"] body {
   background-color: #f4f6f9;
 }
 
-@font-face{
+@font-face {
   font-family: "Material Symbols Rounded";
-  src: url("../../font/material-symbols-rounded-latin-400-normal.woff2") format("woff2");
+  src: url("/font/material-symbols-rounded-latin-400-normal.woff2") format("woff2");
   font-weight: normal;
   font-style: normal;
   font-display: block;
