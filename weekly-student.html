@@ -163,15 +163,7 @@ function renderGrid(){
   const active = appData?.activeDays?.length ? appData.activeDays : [0, 1, 2, 3, 4];
   const daysShown = active.map((index) => ALL_DAYS[index]).filter(Boolean);
 
-  let slotCount = appData?.weeklySlots || 0;
-  if(!slotCount){
-    const grid = appData?.weeklyGrid || {};
-    daysShown.forEach(day => {
-      const keys = Object.keys(grid[day] || {}).map(Number).filter(n => !isNaN(n) && n > 0);
-      if(keys.length) slotCount = Math.max(slotCount, Math.max(...keys));
-    });
-  }
-  if(!slotCount) slotCount = 8;
+  const slotCount = appData?.weeklySlots || 8;
 
   const settings = Object.assign({}, appData?.settings || {});
   const timeSlots = generateTimeSlots(slotCount, settings);

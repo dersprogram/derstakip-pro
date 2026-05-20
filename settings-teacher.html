@@ -1081,7 +1081,7 @@ function buildCellLessonSelect(current){
     if(this.value==="__add__"){
       this.value = current||"";
       document.getElementById("cellAddLessonWrap").style.display = "block";
-      document.getElementById("cellNewLessonInp").focus();
+      requestAnimationFrame(() => document.getElementById("cellNewClassInp").focus());
       return;
     }
     const lessonObj = appData.lessons.find(l => l.name === this.value);
