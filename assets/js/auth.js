@@ -6,12 +6,15 @@ import {
   createUserWithEmailAndPassword,
   deleteUser,
   fetchSignInMethodsForEmail,
+  getRedirectResult,
   linkWithPopup,
+  linkWithRedirect,
   reauthenticateWithCredential,
   reauthenticateWithPopup,
   setPersistence,
   signInWithEmailAndPassword,
   signInWithPopup,
+  signInWithRedirect,
   signOut,
   updatePassword,
   onAuthStateChanged
@@ -157,7 +160,21 @@ import {
 
   function ensureAuthReady(){
     if(authReadyPromise) return authReadyPromise;
-    authReadyPromise = ensureAuthConfigured().then(() => new Promise((resolve, reject) => {
+    authReadyPromise = ensureAuthConfigured().then(() => {
+      // Android redirect ile döndükten sonra sonucu işle
+      if(IS_ANDROID_APP){
+        getRedirectResult(auth).then(result => {
+          if(result?.user){
+            const appData = loadAppData();
+            applyAuthenticatedUser(appData, result.user, {
+              name: result.user.displayName || appData.settings.name,
+              email: result.user.email      || appData.settings.email,
+              provider: "google", persist: true
+            });
+          }
+        }).catch(() => {});
+      }
+      return new Promise((resolve, reject) => {
       if(authStateBound){ resolve(syncFromStorage()); return; }
       authStateBound = true;
       onAuthStateChanged(auth, firebaseUser => {
@@ -178,7 +195,8 @@ import {
         if(error){ error.userMessage = getFirebaseErrorMessage(error); reject(error); return; }
         resolve(syncFromStorage());
       });
-    }));
+      });
+    });
     return authReadyPromise;
   }
 
@@ -279,15 +297,24 @@ import {
     }
   }
 
+  // Android WebView tespiti (MainActivity custom UA ile)
+  const IS_ANDROID_APP = typeof navigator !== "undefined" &&
+    navigator.userAgent.includes("DersTakipAndroid");
+
   // ─── Google ile giriş ────────────────────────────────────────────────────
 
   async function loginWithGoogle(){
-    if(googleLoginPromise) return googleLoginPromise;
     if(hasPlaceholderConfig()) throw new Error("Firebase ayarları eksik.");
+    await ensureAuthConfigured();
+    suspendGuard();
+    // Android WebView'da popup çalışmaz — redirect kullan, sayfa Google'a yönlenir
+    if(IS_ANDROID_APP){
+      await signInWithRedirect(auth, googleProvider);
+      return null; // sayfa yönlenecek, buraya ulaşılmaz
+    }
+    if(googleLoginPromise) return googleLoginPromise;
     googleLoginPromise = (async () => {
       try{
-        await ensureAuthConfigured();
-        suspendGuard();
         let result;
         try{
           result = await signInWithPopup(auth, googleProvider);
