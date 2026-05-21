@@ -41,6 +41,19 @@ html{
 html::-webkit-scrollbar{ display: none; }
 body::-webkit-scrollbar{ display: none; }
 
+/* Sistem nav barı arkasında sayfa içeriği görünmesin */
+body::after{
+  content: '';
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: env(safe-area-inset-bottom);
+  background: var(--color-bg);
+  z-index: 990;
+  pointer-events: none;
+}
+
 body{
   height: 100dvh;
   margin: 0;

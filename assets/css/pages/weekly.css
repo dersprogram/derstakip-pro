@@ -328,6 +328,8 @@ body.portrait .lunchBreakRow{
   font-size: var(--page-head-size);
   font-weight: 800;
   text-shadow: 0 1px 0 rgba(0,0,0,.25);
+  white-space: nowrap;
+  flex-wrap: nowrap;
 }
 
 body.portrait .weekPageTitle .icon{
@@ -338,6 +340,7 @@ body.portrait .weekPageTitle .icon{
 .weekPageTitleText{
   letter-spacing: var(--page-head-letter);
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .weekPageTitle{
