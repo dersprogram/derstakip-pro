@@ -1,4 +1,8 @@
 (function(){
+  // Scroll restoration — sayfa geçişinde scroll pozisyonu geri yüklenmesini engelle
+  if('scrollRestoration' in history) history.scrollRestoration = 'manual';
+  window.scrollTo(0, 0);
+
   (function(){
     var stored = null; try{ stored = localStorage.getItem('appTheme'); }catch(e){}
     var isDark = stored !== 'light';
@@ -563,6 +567,7 @@
   }
 
   function initAppShell(){
+    window.scrollTo(0, 0);
     document.documentElement.style.overflow = '';
     document.documentElement.style.background = '';
     var early = document.getElementById('__early_bg');
