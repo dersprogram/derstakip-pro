@@ -135,7 +135,7 @@
   // ─── Rol sıfırlama ───────────────────────────────────────────────────────
 
   function resetRoleAndData(){
-    customConfirm("Devam ederseniz mevcut ders programı, notlar ve diğer veriler temizlenir.\n\nRol seçim ekranına yönlendirileceksiniz.").then(function(confirmed){
+    customConfirm("Mevcut veriler silinecek. Devam edilsin mi?").then(function(confirmed){
       if(!confirmed) return;
 
       // Tema ve font tercihlerini koru, geri kalanı sil
