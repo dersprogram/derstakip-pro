@@ -10,52 +10,50 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <title>Ders Takip Pro</title>
-<script type="module" src="assets/js/firebase.js?v=20260409-2"></script>
-<script src="assets/js/app-shell.js?v=20260409-2"></script>
-<script type="module" src="assets/js/auth.js?v=20260409-2"></script>
-<link rel="stylesheet" href="assets/css/tokens.css?v=20260409-2">
-<link rel="stylesheet" href="assets/css/base.css?v=20260409-2">
-<link rel="stylesheet" href="assets/css/components.css?v=20260409-2">
-<link rel="stylesheet" href="assets/css/pages/weekly.css?v=20260409-2">
+<script type="module" src="assets/js/firebase.js?v=20260521-1"></script>
+<script src="assets/js/app-shell.js?v=20260521-1"></script>
+<script type="module" src="assets/js/auth.js?v=20260521-1"></script>
+<link rel="stylesheet" href="assets/css/tokens.css?v=20260521-1">
+<link rel="stylesheet" href="assets/css/base.css?v=20260521-1">
+<link rel="stylesheet" href="assets/css/components.css?v=20260521-1">
+<link rel="stylesheet" href="assets/css/pages/weekly.css?v=20260521-1">
 </head>
-<body class="portrait">
-  <div class="appShell">
-    <button type="button" class="floatingBack" aria-label="Geri dön" title="Geri">
-      <span class="icon">arrow_back</span>
-    </button>
+<body class="portrait weekly-page">
+  <button type="button" class="floatingBack" aria-label="Geri dön" title="Geri">
+    <span class="icon">arrow_back</span>
+  </button>
 
-    <div class="appFrame">
-      <div class="appBorder">
-        <div class="appInner">
-          <div class="pageTitle weekPageTitle">
-            <span class="icon">view_week</span>
-            <span class="weekPageTitleText">HAFTALIK PROGRAM</span>
-          </div>
+  <div class="appFrame">
+    <div class="appBorder">
+      <div class="appInner">
+        <div class="pageTitle weekPageTitle">
+          <span class="icon">view_week</span>
+          <span class="weekPageTitleText">HAFTALIK PROGRAM</span>
+        </div>
 
-          <div class="card">
-            <div id="grid" class="grid"></div>
-          </div>
+        <div class="card">
+          <div id="grid" class="grid"></div>
         </div>
       </div>
     </div>
+  </div>
 
-    <div class="nav">
-      <div class="navItem" data-nav="index">
-        <span class="icon">today</span>
-        GÜNLÜK
-      </div>
-      <div class="navItem" data-nav="weekly">
-        <span class="icon">view_week</span>
-        HAFTALIK
-      </div>
-      <div class="navItem" data-nav="notes">
-        <span class="icon">edit_note</span>
-        NOTLAR
-      </div>
-      <div class="navItem" data-nav="settings">
-        <span class="icon">settings</span>
-        AYARLAR
-      </div>
+  <div class="nav">
+    <div class="navItem" data-nav="index">
+      <span class="icon">today</span>
+      GÜNLÜK
+    </div>
+    <div class="navItem" data-nav="weekly">
+      <span class="icon">view_week</span>
+      HAFTALIK
+    </div>
+    <div class="navItem" data-nav="notes">
+      <span class="icon">edit_note</span>
+      NOTLAR
+    </div>
+    <div class="navItem" data-nav="settings">
+      <span class="icon">settings</span>
+      AYARLAR
     </div>
   </div>
 
@@ -241,6 +239,7 @@ if(floatingBack){
     window.location.replace("index-student.html");
   });
 }
+
 </script>
 </body>
 </html>

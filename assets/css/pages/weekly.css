@@ -9,16 +9,11 @@
   --page-head-letter: .14em;
 }
 
-body{
-  padding-bottom: calc(var(--nav-height) + 28px);
-  
-}
- 
- .appShell{
+body.portrait,
+body.weekly-page{
   position: relative;
   min-height: 100dvh;
 }
-
 
 .appBorder{
   max-width: 1200px;

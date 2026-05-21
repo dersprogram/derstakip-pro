@@ -50,9 +50,20 @@ html{
   font-size: var(--base-font-size);
   scrollbar-width: none;
   -ms-overflow-style: none;
+  scrollbar-gutter: stable;
 }
 html::-webkit-scrollbar{ display: none; }
 body::-webkit-scrollbar{ display: none; }
+
+/* Sadece app-shell.js yüklenen sayfalarda (welcome hariç) */
+html.app-shell-active body:not(.app-ready):not(.loaded){
+  visibility: hidden;
+}
+
+html.app-shell-active body.app-ready,
+html.app-shell-active body.loaded{
+  visibility: visible;
+}
 
 /* Sistem nav barı arkasında sayfa içeriği görünmesin */
 body::after{
@@ -75,7 +86,9 @@ body{
   overscroll-behavior: none;
   scrollbar-width: none;
   -ms-overflow-style: none;
+  scrollbar-gutter: stable;
   -webkit-overflow-scrolling: touch;
+  scroll-padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom) + 28px);
   padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom) + 42px);
   font-family: var(--font-family-base);
   color: var(--text-primary);

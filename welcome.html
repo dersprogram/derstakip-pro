@@ -18,12 +18,25 @@
   }catch(e){}
 })();
 </script>
+<script>
+(function(){
+  var theme = null;
+  var font = null;
+  try{ theme = localStorage.getItem("appTheme"); }catch(e){}
+  try{ font = localStorage.getItem("appFontSize"); }catch(e){}
+  if(theme === "light") document.documentElement.dataset.theme = "light";
+  var fontMap = { small: "13px", medium: "15px", large: "18px" };
+  if(font && fontMap[font]) document.documentElement.style.setProperty("--base-font-size", fontMap[font]);
+})();
+</script>
 <link rel="icon" href="icons/icon-192.png"/>
-<link rel="stylesheet" href="assets/css/tokens.css">
-<link rel="stylesheet" href="assets/css/base.css">
+<link rel="stylesheet" href="assets/css/tokens.css?v=20260521-2">
+<link rel="stylesheet" href="assets/css/base.css?v=20260521-2">
+<link rel="stylesheet" href="assets/css/brand.css?v=20260521-2">
 <style>
-/* welcome.html — kendi stilleri, nav yok */
+/* welcome.html — rol seçimi (marka: brand.css) */
 body{
+  visibility: visible;
   min-height: 100dvh;
   display: flex;
   align-items: center;
@@ -42,50 +55,6 @@ body{
   gap: 0;
 }
 
-/* Marka */
-.brand{
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  font-size: var(--font-xxl);
-  font-weight: 800;
-  letter-spacing: .06em;
-  font-family: 'Inter', sans-serif;
-  margin-bottom: 6px;
-}
-
-.brand .orange{ color: var(--color-accent); }
-.brand .white{ color: var(--text-primary); }
-
-.brand-icon{
-  position: relative;
-  width: .9em;
-  height: .82em;
-  margin-right: .35em;
-  transform: translateY(.09em);
-}
-
-.brand-icon .line-1,
-.brand-icon .line-2{
-  position: absolute;
-  left: 0;
-  height: 3px;
-  background: var(--text-primary);
-  border-radius: 999px;
-}
-.brand-icon .line-1{ top: 0; width: 100%; }
-.brand-icon .line-2{ top: 7px; width: 66%; }
-.brand-icon .line-3{
-  position: absolute;
-  top: 13px;
-  left: 0;
-  width: 5px;
-  height: 5px;
-  background: var(--color-accent);
-  border-radius: 999px;
-}
-
 .tagline{
   font-size: .82rem;
   color: var(--text-muted);
@@ -94,8 +63,8 @@ body{
   text-align: center;
 }
 
-/* Ana kart */
-.card{
+/* Rol kartı */
+.welcome-card{
   width: 100%;
   background: linear-gradient(180deg, var(--color-panel-top), var(--color-panel-bottom));
   border: 1px solid var(--border-normal);
@@ -106,7 +75,7 @@ body{
   padding: 28px 24px 24px;
 }
 
-.card-title{
+.welcome-card-title{
   font-size: .72rem;
   font-weight: 800;
   letter-spacing: .12em;
@@ -228,14 +197,14 @@ body{
       <div class="line-2"></div>
       <div class="line-3"></div>
     </div>
-    <span class="white">Ders</span>
+    <span class="brandWord">Ders</span>
     <span class="orange">Takip</span>
-    <span style="font-size:.45em; font-weight:700; color:var(--color-accent); letter-spacing:.12em; align-self:flex-end; margin-bottom:.18em; margin-left:.1em; opacity:.85;">Pro</span>
+    <span class="brandPro">Pro</span>
   </div>
   <div class="tagline">Rolünü seç, başla</div>
 
-  <div class="card">
-    <div class="card-title">Nasıl kullanacaksın?</div>
+  <div class="welcome-card">
+    <div class="welcome-card-title">Nasıl kullanacaksın?</div>
 
     <div class="role-grid">
       <button class="role-btn" data-role="teacher" onclick="selectRole('teacher')">

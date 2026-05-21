@@ -52,13 +52,13 @@ if(window.location.hostname === "127.0.0.1"){
   window.location.replace(canonicalUrl.toString());
 }
 </script>
-<script type="module" src="assets/js/firebase.js?v=20260409-2"></script>
-<script src="assets/js/app-shell.js?v=20260409-2"></script>
-<script type="module" src="assets/js/auth.js?v=20260409-2"></script>
-<link rel="stylesheet" href="assets/css/tokens.css?v=20260409-2">
-<link rel="stylesheet" href="assets/css/base.css?v=20260409-2">
-<link rel="stylesheet" href="assets/css/components.css?v=20260409-2">
-<link rel="stylesheet" href="assets/css/pages/settings.css?v=20260409-2">
+<script type="module" src="assets/js/firebase.js?v=20260521-1"></script>
+<script src="assets/js/app-shell.js?v=20260521-1"></script>
+<script type="module" src="assets/js/auth.js?v=20260521-1"></script>
+<link rel="stylesheet" href="assets/css/tokens.css?v=20260521-1">
+<link rel="stylesheet" href="assets/css/base.css?v=20260521-1">
+<link rel="stylesheet" href="assets/css/components.css?v=20260521-1">
+<link rel="stylesheet" href="assets/css/pages/settings.css?v=20260521-1">
 </head>
 <body>
 <div class="appFrame">
@@ -1849,7 +1849,6 @@ window.addEventListener('appDataSynced', function(e) {
 });
 
 window.addEventListener("load", () => {
-  document.body.classList.add("loaded");
   if(new URLSearchParams(window.location.search).get("action") === "showuser"){
     history.replaceState(null, "", window.location.pathname);
     const targetEl = isGuest()

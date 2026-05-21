@@ -1,7 +1,7 @@
 // Service Worker — Ders Takip Pro
 // Strateji: local-first, CDN cache-first, Firebase API network-only
 
-const CACHE_VER      = 'v25';
+const CACHE_VER      = 'v28';
 const CACHE_LOCAL    = 'ders-takip-local-'  + CACHE_VER;
 const CACHE_CDN      = 'ders-takip-cdn-'    + CACHE_VER;
 
@@ -19,6 +19,7 @@ const LOCAL_ASSETS = [
   '/settings-student.html',
   '/assets/css/tokens.css',
   '/assets/css/base.css',
+  '/assets/css/brand.css',
   '/assets/css/components.css',
   '/assets/css/pages/notes.css',
   '/assets/css/pages/home-teacher.css',

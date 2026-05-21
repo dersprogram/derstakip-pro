@@ -8,18 +8,19 @@
     var isDark = stored !== 'light';
     var bg = isDark ? '#050912' : '#f4f6f9';
     var de = document.documentElement;
+    de.classList.add('app-shell-active');
     de.style.overflow   = 'hidden';
     de.style.background = bg;
     var s = document.createElement('style');
     s.id = '__early_bg';
-    s.textContent = 'body{background:' + bg + '!important}';
+    s.textContent = 'body{background:' + bg + '!important}html.app-shell-active body:not(.app-ready):not(.loaded){visibility:hidden!important}';
     document.head.appendChild(s);
     var mList = document.querySelectorAll('meta[name="theme-color"]');
     if(mList.length === 0){ var m = document.createElement('meta'); m.name = 'theme-color'; m.content = bg; document.head.appendChild(m); }
     else { mList.forEach(function(m){ m.content = bg; }); }
   })();
 
-  const APP_VERSION = "20260409-2";
+  const APP_VERSION = "20260521-1";
   const THEME_KEY = "appTheme";
   const FONT_KEY = "appFontSize";
   const SETTINGS_KEY = "ayarlar";
@@ -332,6 +333,40 @@
     btn.setAttribute("title", nextThemeLabel);
   }
 
+  // ─── Sayfa düzeni / görünürlük (tüm sayfalarda aynı) ─────────────────────
+
+  function isWelcomePagePath(){
+    return window.location.pathname.toLowerCase().includes("welcome");
+  }
+
+  function normalizePageLayout(){
+    if(isWelcomePagePath()) return;
+    const nav = document.querySelector(".nav");
+    if(nav && nav.parentElement !== document.body){
+      document.body.appendChild(nav);
+    }
+  }
+
+  function revealAppPage(){
+    if(isWelcomePagePath()) return;
+    if(document.body.classList.contains("app-ready")) return;
+    function show(){
+      document.body.classList.add("app-ready");
+      document.body.classList.add("loaded");
+    }
+    if(document.fonts && document.fonts.ready){
+      document.fonts.ready.then(function(){
+        requestAnimationFrame(function(){
+          requestAnimationFrame(show);
+        });
+      }).catch(show);
+      return;
+    }
+    requestAnimationFrame(function(){
+      requestAnimationFrame(show);
+    });
+  }
+
   // ─── Nav ─────────────────────────────────────────────────────────────────
 
   function initNavActive(){
@@ -567,6 +602,7 @@
   }
 
   function initAppShell(){
+    document.documentElement.classList.add('app-shell-active');
     window.scrollTo(0, 0);
     document.documentElement.style.overflow = '';
     document.documentElement.style.background = '';
@@ -579,6 +615,7 @@
     addCacheBusting();
     applyTheme(getStoredTheme(), false);
     applyFontSize(getStoredFontSize(), false);
+    normalizePageLayout();
     bindExternalNavigationGuard();
     bindNavClicks();
     initNavActive();
@@ -586,6 +623,7 @@
     ensureRegisterPrompt();
     bindBackButton();
     injectPWAMeta();
+    revealAppPage();
 
     // sync.js'i dinamik olarak yükle (ES module, fire-and-forget)
     syncNow().catch(function(){});
@@ -625,6 +663,8 @@
     resumeExternalNavigationGuard,
     bindNavClicks,
     initNavActive,
+    normalizePageLayout,
+    revealAppPage,
     initAppShell,
     syncThemeToggleButton,
     showRegisterPrompt,
