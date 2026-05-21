@@ -8,7 +8,8 @@
       "firebase.json",
       "**/.*",
       "**/node_modules/**",
-      "android-apk/**"
+      "android-apk/**",
+      "**/*.apk"
     ],
     "headers": [
       {
