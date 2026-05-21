@@ -158,7 +158,7 @@
   }
 
   function getStoredFontSize(){
-    return normalizeFontSize(localStorage.getItem(FONT_KEY) || "medium");
+    return normalizeFontSize(localStorage.getItem(FONT_KEY) || "small");
   }
 
   function loadAppData(){
@@ -637,9 +637,14 @@
 
   window.addEventListener("storage", function(event){
     if(event.key === THEME_KEY) applyTheme(event.newValue || "dark", false);
-    if(event.key === FONT_KEY) applyFontSize(event.newValue || "medium", false);
+    if(event.key === FONT_KEY) applyFontSize(event.newValue || "small", false);
     if(event.key === SETTINGS_KEY) syncAuthState();
   });
+
+  // ─── Cross-document view transition iptal ───────────────────────────────────
+  // Bazı Chrome/WebView versiyonları CSS'e rağmen sağdan kayma animasyonu uygular.
+  window.addEventListener("pageswap", function(e){ if(e.viewTransition) e.viewTransition.skipTransition(); });
+  window.addEventListener("pagereveal", function(e){ if(e.viewTransition) e.viewTransition.skipTransition(); });
 
   // ─── Service Worker kaydı ────────────────────────────────────────────────────
 
