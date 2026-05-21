@@ -25,6 +25,16 @@ html[data-theme="light"] body {
   font-display: block;
 }
 
+/* Chrome standalone PWA'da otomatik sayfa geçiş animasyonunu devre dışı bırak */
+@view-transition {
+  navigation: none;
+}
+
+::view-transition-old(*),
+::view-transition-new(*) {
+  animation: none;
+}
+
 *,
 *::before,
 *::after{
