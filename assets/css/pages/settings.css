@@ -627,7 +627,7 @@ body{
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 5px;
+  gap: 6px;
   margin-top: 14px;
   padding-top: 13px;
   border-top: 1px solid var(--border-thin);
